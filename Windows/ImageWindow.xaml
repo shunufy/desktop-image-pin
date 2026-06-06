@@ -1,0 +1,52 @@
+<Window x:Class="DesktopImagePin.Windows.ImageWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Image"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        AllowDrop="True"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterScreen"
+        DragOver="Window_DragOver"
+        Drop="Window_Drop">
+    <Grid Background="Transparent">
+        <Image x:Name="DisplayedImage"
+               Stretch="Fill"
+               SnapsToDevicePixels="True"
+               MouseLeftButtonDown="DisplayedImage_MouseLeftButtonDown"
+               MouseWheel="DisplayedImage_MouseWheel">
+            <Image.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Change Image"
+                              Click="ChangeImageMenuItem_Click" />
+                    <MenuItem Header="Duplicate"
+                              Click="DuplicateMenuItem_Click" />
+                    <Separator />
+                    <MenuItem Header="Zoom In"
+                              Click="ZoomInMenuItem_Click" />
+                    <MenuItem Header="Zoom Out"
+                              Click="ZoomOutMenuItem_Click" />
+                    <Separator />
+                    <MenuItem Header="Window Layer">
+                        <MenuItem x:Name="TopmostMenuItem"
+                                  Header="Always on Top"
+                                  IsCheckable="True"
+                                  Click="TopmostMenuItem_Click" />
+                        <MenuItem x:Name="NormalLayerMenuItem"
+                                  Header="Normal"
+                                  IsCheckable="True"
+                                  Click="NormalLayerMenuItem_Click" />
+                        <MenuItem x:Name="BottommostMenuItem"
+                                  Header="Send to Back"
+                                  IsCheckable="True"
+                                  Click="BottommostMenuItem_Click" />
+                    </MenuItem>
+                    <MenuItem Header="Remove"
+                              Click="DeleteMenuItem_Click" />
+                </ContextMenu>
+            </Image.ContextMenu>
+        </Image>
+    </Grid>
+</Window>
