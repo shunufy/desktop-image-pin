@@ -1,17 +1,25 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using DesktopImagePin.Models;
 using DesktopImagePin.Windows;
 
 namespace DesktopImagePin.Services;
 
-public sealed class ImageManager
+public sealed class ImageManager : INotifyPropertyChanged
 {
     private static readonly HashSet<string> SupportedExtensions = new(
         [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tif", ".tiff"],
         StringComparer.OrdinalIgnoreCase);
 
     public ObservableCollection<ImageItem> Items { get; } = [];
+    public int ImageCount => Items.Count;
+
+    public ImageManager()
+    {
+        Items.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ImageCount));
+    }
 
     public ImageItem AddImage(string filePath, SavedImageState? savedState = null)
     {
@@ -26,6 +34,11 @@ public sealed class ImageManager
             item.Left = savedState.Left;
             item.Top = savedState.Top;
             item.DisplayLayer = savedState.DisplayLayer;
+            item.Opacity = Math.Clamp(savedState.Opacity, 0.1, 1.0);
+            item.RotationDegrees = savedState.RotationDegrees;
+            item.FlipHorizontal = savedState.FlipHorizontal;
+            item.FlipVertical = savedState.FlipVertical;
+            item.IsClickThrough = savedState.IsClickThrough;
         }
 
         var window = new ImageWindow(item, this);
@@ -82,7 +95,12 @@ public sealed class ImageManager
             ScaleY = source.ScaleY,
             Left = (source.Left ?? source.Window?.Left ?? 0) + 24,
             Top = (source.Top ?? source.Window?.Top ?? 0) + 24,
-            DisplayLayer = source.DisplayLayer
+            DisplayLayer = source.DisplayLayer,
+            Opacity = source.Opacity,
+            RotationDegrees = source.RotationDegrees,
+            FlipHorizontal = source.FlipHorizontal,
+            FlipVertical = source.FlipVertical,
+            IsClickThrough = source.IsClickThrough
         };
 
         return AddImage(source.FilePath, duplicateState);
@@ -100,6 +118,36 @@ public sealed class ImageManager
     {
         item.DisplayLayer = displayLayer;
         item.Window?.SetDisplayLayer(displayLayer);
+    }
+
+    public void SetOpacity(ImageItem item, double opacity)
+    {
+        item.Opacity = Math.Clamp(opacity, 0.1, 1.0);
+        item.Window?.ApplyAppearance();
+    }
+
+    public void RotateImage(ImageItem item, int degrees)
+    {
+        item.RotationDegrees += degrees;
+        item.Window?.ApplyAppearance();
+    }
+
+    public void ToggleHorizontalFlip(ImageItem item)
+    {
+        item.FlipHorizontal = !item.FlipHorizontal;
+        item.Window?.ApplyAppearance();
+    }
+
+    public void ToggleVerticalFlip(ImageItem item)
+    {
+        item.FlipVertical = !item.FlipVertical;
+        item.Window?.ApplyAppearance();
+    }
+
+    public void SetClickThrough(ImageItem item, bool isClickThrough)
+    {
+        item.IsClickThrough = isClickThrough;
+        item.Window?.SetClickThrough(isClickThrough);
     }
 
     public void RemoveImage(ImageItem item)
@@ -145,5 +193,12 @@ public sealed class ImageManager
         {
             throw new NotSupportedException("This image format is not supported.");
         }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

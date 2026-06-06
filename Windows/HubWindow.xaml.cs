@@ -12,12 +12,15 @@ using DataFormats = System.Windows.DataFormats;
 using DragDropEffects = System.Windows.DragDropEffects;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using CheckBox = System.Windows.Controls.CheckBox;
+using Slider = System.Windows.Controls.Slider;
 
 namespace DesktopImagePin.Windows;
 
 public partial class HubWindow : Window
 {
     private readonly ImageManager _imageManager;
+    private readonly ImageImportService _imageImportService = new();
     private GlobalHotkeyService? _hotkeyService;
 
     public HubWindow(ImageManager imageManager)
@@ -90,6 +93,53 @@ public partial class HubWindow : Window
         }
     }
 
+    private void AddClipboardImageButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var filePath = _imageImportService.ImportClipboardImage();
+            if (filePath is null)
+            {
+                MessageBox.Show(
+                    this,
+                    "The clipboard does not contain an image or image file.",
+                    "Clipboard",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            _imageManager.AddImage(filePath);
+        }
+        catch (Exception ex)
+        {
+            ShowImageError(ex);
+        }
+    }
+
+    private async void AddImageFromUrlButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new UrlInputWindow
+        {
+            Owner = this
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var filePath = await _imageImportService.ImportFromUrlAsync(dialog.ImageUrl);
+            _imageManager.AddImage(filePath);
+        }
+        catch (Exception ex)
+        {
+            ShowImageError(ex);
+        }
+    }
+
     private void ChangeImageButton_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as Button)?.Tag is not ImageItem item)
@@ -128,6 +178,56 @@ public partial class HubWindow : Window
         if ((sender as Button)?.Tag is ImageItem item)
         {
             _imageManager.SetDisplayLayer(item, displayLayer);
+        }
+    }
+
+    private void RotateLeftButton_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is ImageItem item)
+        {
+            _imageManager.RotateImage(item, -90);
+        }
+    }
+
+    private void RotateRightButton_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is ImageItem item)
+        {
+            _imageManager.RotateImage(item, 90);
+        }
+    }
+
+    private void FlipHorizontalButton_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is ImageItem item)
+        {
+            _imageManager.ToggleHorizontalFlip(item);
+        }
+    }
+
+    private void FlipVerticalButton_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is ImageItem item)
+        {
+            _imageManager.ToggleVerticalFlip(item);
+        }
+    }
+
+    private void ClickThroughCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox { Tag: ImageItem item } checkBox)
+        {
+            _imageManager.SetClickThrough(item, checkBox.IsChecked == true);
+        }
+    }
+
+    private void OpacitySlider_ValueChanged(
+        object sender,
+        RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (sender is Slider { Tag: ImageItem item })
+        {
+            _imageManager.SetOpacity(item, e.NewValue / 100.0);
         }
     }
 

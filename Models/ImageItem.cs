@@ -14,6 +14,11 @@ public sealed class ImageItem : INotifyPropertyChanged
     private ImageDisplayLayer _displayLayer = ImageDisplayLayer.Normal;
     private double? _left;
     private double? _top;
+    private double _opacity = 1.0;
+    private int _rotationDegrees;
+    private bool _flipHorizontal;
+    private bool _flipVertical;
+    private bool _isClickThrough;
 
     public ImageItem(string filePath)
     {
@@ -129,6 +134,112 @@ public sealed class ImageItem : INotifyPropertyChanged
 
             _top = value;
             OnPropertyChanged();
+        }
+    }
+
+    public double Opacity
+    {
+        get => _opacity;
+        internal set
+        {
+            if (Math.Abs(_opacity - value) < 0.0001)
+            {
+                return;
+            }
+
+            _opacity = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(OpacityPercent));
+        }
+    }
+
+    public int OpacityPercent => (int)Math.Round(Opacity * 100);
+
+    public int RotationDegrees
+    {
+        get => _rotationDegrees;
+        internal set
+        {
+            var normalized = ((value % 360) + 360) % 360;
+            if (_rotationDegrees == normalized)
+            {
+                return;
+            }
+
+            _rotationDegrees = normalized;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(TransformText));
+        }
+    }
+
+    public bool FlipHorizontal
+    {
+        get => _flipHorizontal;
+        internal set
+        {
+            if (_flipHorizontal == value)
+            {
+                return;
+            }
+
+            _flipHorizontal = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(TransformText));
+        }
+    }
+
+    public bool FlipVertical
+    {
+        get => _flipVertical;
+        internal set
+        {
+            if (_flipVertical == value)
+            {
+                return;
+            }
+
+            _flipVertical = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(TransformText));
+        }
+    }
+
+    public bool IsClickThrough
+    {
+        get => _isClickThrough;
+        internal set
+        {
+            if (_isClickThrough == value)
+            {
+                return;
+            }
+
+            _isClickThrough = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string TransformText
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (RotationDegrees != 0)
+            {
+                parts.Add($"{RotationDegrees}°");
+            }
+
+            if (FlipHorizontal)
+            {
+                parts.Add("Flip H");
+            }
+
+            if (FlipVertical)
+            {
+                parts.Add("Flip V");
+            }
+
+            return parts.Count == 0 ? "No transform" : string.Join(" / ", parts);
         }
     }
 

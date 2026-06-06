@@ -15,12 +15,18 @@ Each image appears as its own transparent window and can be moved, resized, dupl
 - `Ctrl + Mouse Wheel` to resize width only
 - `Alt + Mouse Wheel` to resize height only
 - Set each image to Always on Top, Normal, or Back
+- Enable click-through mode per image so the desktop or windows behind it remain interactive
+- Adjust opacity from 10% to 100%
+- Rotate left/right by 90 degrees and flip horizontally or vertically from the Hub
 - Replace, duplicate, or remove individual images
 - Drag and drop multiple image files into the Hub or an existing image
+- Add an image or image file from the clipboard
+- Download and add an image from an HTTP/HTTPS URL
 - Restore image paths, positions, horizontal/vertical scales, and layer settings on the next launch
 - System tray support
 - `Ctrl + Shift + H` to show or hide the Hub
 - Automatically fit oversized images within 90% of the desktop work area
+- Display the current image count in the Hub
 
 Supported formats: PNG, JPEG, BMP, GIF, TIFF. Animated GIFs display their first frame.
 
@@ -72,13 +78,14 @@ Layout data is stored in:
 %LocalAppData%\DesktopImagePin\images.json
 ```
 
-The app stores image paths and layout settings only. It does not copy or upload image files.
+The app stores image paths and layout settings only. Clipboard and URL images are saved under `%LocalAppData%\DesktopImagePin\ImportedImages` so they can be restored later. URL downloads are limited to 25 MB.
 
 ## Notes
 
 - Closing the Hub hides it; it does not exit the app.
 - Exit from the Hub or system tray menu.
 - A missing image file is skipped during startup restoration.
+- Click-through images must be turned off from the Hub before they can receive mouse input again.
 - Another application may already use `Ctrl + Shift + H`; the app will show a warning if registration fails.
 
 ## License

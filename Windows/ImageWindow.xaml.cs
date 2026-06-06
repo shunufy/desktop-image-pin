@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using DesktopImagePin.Models;
@@ -23,6 +24,9 @@ public partial class ImageWindow : Window
     private const uint SwpNoMove = 0x0002;
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoActivate = 0x0010;
+    private const uint SwpFrameChanged = 0x0020;
+    private const int GwlExStyle = -20;
+    private const int WsExTransparent = 0x00000020;
 
     private const double MinimumScale = 0.05;
     private const double MaximumScale = 10.0;
@@ -49,7 +53,11 @@ public partial class ImageWindow : Window
         }
 
         SetImage(item.FilePath, fitToWorkArea: !hasSavedPosition);
-        SourceInitialized += (_, _) => SetDisplayLayer(_item.DisplayLayer);
+        SourceInitialized += (_, _) =>
+        {
+            SetDisplayLayer(_item.DisplayLayer);
+            SetClickThrough(_item.IsClickThrough);
+        };
         LocationChanged += (_, _) =>
         {
             _item.Left = Left;
@@ -79,6 +87,56 @@ public partial class ImageWindow : Window
         }
 
         ApplyScale(_item.ScaleX, _item.ScaleY);
+    }
+
+    public void ApplyAppearance()
+    {
+        Opacity = _item.Opacity;
+
+        var transform = new TransformGroup();
+        transform.Children.Add(new ScaleTransform(
+            _item.FlipHorizontal ? -1 : 1,
+            _item.FlipVertical ? -1 : 1));
+        transform.Children.Add(new RotateTransform(_item.RotationDegrees));
+        DisplayedImage.LayoutTransform = transform;
+
+        var imageDisplayWidth = Math.Max(1, _imageWidth * _item.ScaleX);
+        var imageDisplayHeight = Math.Max(1, _imageHeight * _item.ScaleY);
+        DisplayedImage.Width = imageDisplayWidth;
+        DisplayedImage.Height = imageDisplayHeight;
+
+        var swapsDimensions = _item.RotationDegrees is 90 or 270;
+        Width = swapsDimensions ? imageDisplayHeight : imageDisplayWidth;
+        Height = swapsDimensions ? imageDisplayWidth : imageDisplayHeight;
+    }
+
+    public void SetClickThrough(bool isClickThrough)
+    {
+        _item.IsClickThrough = isClickThrough;
+
+        var handle = new WindowInteropHelper(this).Handle;
+        if (handle == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var extendedStyle = GetWindowLong(handle, GwlExStyle);
+        var updatedStyle = isClickThrough
+            ? extendedStyle | WsExTransparent
+            : extendedStyle & ~WsExTransparent;
+
+        if (updatedStyle != extendedStyle)
+        {
+            SetWindowLong(handle, GwlExStyle, updatedStyle);
+            SetWindowPos(
+                handle,
+                IntPtr.Zero,
+                0,
+                0,
+                0,
+                0,
+                SwpNoMove | SwpNoSize | SwpNoActivate | SwpFrameChanged);
+        }
     }
 
     public void SetDisplayLayer(ImageDisplayLayer displayLayer)
@@ -143,9 +201,7 @@ public partial class ImageWindow : Window
         _item.ScaleX = clampedScaleX;
         _item.ScaleY = clampedScaleY;
         _item.Scale = Math.Min(clampedScaleX, clampedScaleY);
-
-        Width = Math.Max(1, _imageWidth * clampedScaleX);
-        Height = Math.Max(1, _imageHeight * clampedScaleY);
+        ApplyAppearance();
     }
 
     private void DisplayedImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -300,4 +356,10 @@ public partial class ImageWindow : Window
         int width,
         int height,
         uint flags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern int GetWindowLong(IntPtr windowHandle, int index);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern int SetWindowLong(IntPtr windowHandle, int index, int newLong);
 }

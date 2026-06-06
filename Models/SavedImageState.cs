@@ -9,4 +9,9 @@ public sealed class SavedImageState
     public double Left { get; set; }
     public double Top { get; set; }
     public ImageDisplayLayer DisplayLayer { get; set; } = ImageDisplayLayer.Normal;
+    public double Opacity { get; set; } = 1.0;
+    public int RotationDegrees { get; set; }
+    public bool FlipHorizontal { get; set; }
+    public bool FlipVertical { get; set; }
+    public bool IsClickThrough { get; set; }
 }

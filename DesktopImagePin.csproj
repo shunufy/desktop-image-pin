@@ -9,7 +9,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>DesktopImagePin</AssemblyName>
     <RootNamespace>DesktopImagePin</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>shunufy</Authors>
     <Description>Pin transparent, movable images directly onto the Windows desktop.</Description>
     <RepositoryUrl>https://github.com/shunufy/desktop-image-pin</RepositoryUrl>

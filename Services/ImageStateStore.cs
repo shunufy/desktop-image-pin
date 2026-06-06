@@ -54,7 +54,12 @@ public sealed class ImageStateStore
             ScaleY = item.ScaleY,
             Left = item.Left ?? item.Window?.Left ?? 0,
             Top = item.Top ?? item.Window?.Top ?? 0,
-            DisplayLayer = item.DisplayLayer
+            DisplayLayer = item.DisplayLayer,
+            Opacity = item.Opacity,
+            RotationDegrees = item.RotationDegrees,
+            FlipHorizontal = item.FlipHorizontal,
+            FlipVertical = item.FlipVertical,
+            IsClickThrough = item.IsClickThrough
         }).ToArray();
 
         var directory = Path.GetDirectoryName(_filePath)!;
