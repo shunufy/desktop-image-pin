@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using Clipboard = System.Windows.Clipboard;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace DesktopImagePin.Windows;
 

@@ -9,10 +9,22 @@
     <Nullable>enable</Nullable>
     <AssemblyName>DesktopImagePin</AssemblyName>
     <RootNamespace>DesktopImagePin</RootNamespace>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Authors>shunufy</Authors>
     <Description>Pin transparent, movable images directly onto the Windows desktop.</Description>
     <RepositoryUrl>https://github.com/shunufy/desktop-image-pin</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) 2026 shunufy</Copyright>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
+    <EmbeddedResource Remove="tests\**\*" />
+    <None Remove="tests\**\*" />
+  </ItemGroup>
 
 </Project>

@@ -1,56 +1,125 @@
 # Desktop Image Pin
 
-[日本語版 README](README.ja.md)
+[![CI](https://github.com/shunufy/desktop-image-pin/actions/workflows/ci.yml/badge.svg)](https://github.com/shunufy/desktop-image-pin/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
 
-Desktop Image Pin is a lightweight Windows joke/utility app that lets you place images directly on your desktop without ordinary window frames or title bars.
+[日本語 README](README.ja.md)
 
-Each image appears as its own transparent window and can be moved, resized, duplicated, replaced, layered, or removed independently.
+Desktop Image Pin places images directly on the Windows desktop as independent, transparent, borderless windows. It is built for people who want reference art, stream decorations, visual reminders, cutouts, or playful desktop layouts without the chrome and single-canvas workflow of a conventional image viewer.
+
+Unlike a normal viewer, every image can be moved, resized, layered, made click-through, transformed, duplicated, and restored independently. A central Hub keeps large collections manageable while the images themselves remain visually unobtrusive.
+
+![Desktop Image Pin Hub](docs/images/hub.png)
+
+## Who It Helps
+
+- Creators who keep visual references visible while working
+- Streamers and presenters who arrange transparent image overlays
+- Users who want persistent desktop decorations or reminders
+- Anyone who needs many independently positioned images instead of one viewer window
 
 ## Features
 
-- Display multiple images at the same time
-- Transparent, borderless image windows
-- Drag images to move them
-- Mouse wheel to resize proportionally
-- `Ctrl + Mouse Wheel` to resize width only
-- `Alt + Mouse Wheel` to resize height only
-- Set each image to Always on Top, Normal, or Back
-- Enable click-through mode per image so the desktop or windows behind it remain interactive
-- Adjust opacity from 10% to 100%
-- Rotate left/right by 90 degrees and flip horizontally or vertically from the Hub
-- Replace, duplicate, or remove individual images
-- Drag and drop multiple image files into the Hub or an existing image
-- Add an image or image file from the clipboard
-- Download and add an image from an HTTP/HTTPS URL
-- Restore image paths, positions, horizontal/vertical scales, and layer settings on the next launch
-- System tray support
-- `Ctrl + Shift + H` to show or hide the Hub
+- Display multiple images as transparent, borderless windows
+- Move each image with left-drag
+- Resize proportionally with the mouse wheel
+- Resize width only with `Ctrl + Mouse Wheel`
+- Resize height only with `Alt + Mouse Wheel`
 - Automatically fit oversized images within 90% of the desktop work area
-- Display the current image count in the Hub
+- Set each image to Always on Top, Normal, or Back
+- Enable click-through mode per image
+- Adjust opacity from 10% to 100%
+- Rotate by 90 degrees and flip horizontally or vertically
+- Replace, duplicate, or remove images independently
+- Drag and drop multiple files into the Hub or an image window
+- Import from the clipboard or an HTTP/HTTPS URL
+- Save named URL imports locally and reuse them without downloading on every launch
+- Restore paths, positions, independent X/Y scales, layers, opacity, transforms, and click-through state
+- Use the system tray while the Hub is hidden
+- Toggle the Hub globally with `Ctrl + Shift + H`
+- View the current displayed-image count
 
-Supported formats: PNG, JPEG, BMP, GIF, TIFF. Animated GIFs display their first frame.
+## Supported Formats
 
-## Requirements
+| Format | Extensions | Notes |
+| --- | --- | --- |
+| PNG | `.png` | Transparency supported |
+| JPEG | `.jpg`, `.jpeg` | Static images |
+| BMP | `.bmp` | Static images |
+| GIF | `.gif` | First frame only |
+| TIFF | `.tif`, `.tiff` | Static images |
+
+URL downloads are limited to 25 MB and are validated as images before use.
+
+## Install
+
+### Release executable
+
+1. Download `DesktopImagePin.exe` from the [latest GitHub Release](https://github.com/shunufy/desktop-image-pin/releases/latest).
+2. Place it in a folder you control.
+3. Double-click the executable.
+
+The release is a self-contained Windows x64 executable; installing the .NET runtime separately is not required.
+
+### Run from source
+
+Requirements:
 
 - Windows 10 or Windows 11
-- .NET 8 SDK for building from source
-
-## Run from Source
+- .NET 8 SDK
 
 ```powershell
-dotnet run
+git clone https://github.com/shunufy/desktop-image-pin.git
+cd desktop-image-pin
+dotnet restore DesktopImagePin.sln --locked-mode
+dotnet run --project DesktopImagePin.csproj
 ```
 
-## Build
+## Controls
 
-```powershell
-dotnet build -c Release
+| Action | Control |
+| --- | --- |
+| Move an image | Left-drag |
+| Open image menu | Right-click |
+| Resize proportionally | Mouse wheel |
+| Resize width only | `Ctrl + Mouse Wheel` |
+| Resize height only | `Alt + Mouse Wheel` |
+| Add multiple local images | Drag and drop into the Hub |
+| Show or hide the Hub | `Ctrl + Shift + H` |
+| Restore a click-through image | Disable click-through from the Hub |
+| Exit completely | Hub **Exit** button or tray menu |
+
+The Hub contains two tabs:
+
+- **Images** manages displayed images and their transforms, layer, opacity, replacement, and removal.
+- **Imports** stores named URL images in a local cache. **Display** reuses the cached file, while **Refresh** downloads it again.
+
+## Saved Data
+
+Desktop Image Pin stores data only on the local machine:
+
+```text
+%LocalAppData%\DesktopImagePin\images.json
+%LocalAppData%\DesktopImagePin\url-imports.json
+%LocalAppData%\DesktopImagePin\ImportedImages\
 ```
 
-Create a self-contained single-file executable for Windows x64:
+`images.json` contains local file paths and display settings. Do not attach it to public issues without removing personal paths.
+
+## Build And Test
 
 ```powershell
-dotnet publish -c Release -r win-x64 --self-contained true `
+dotnet restore DesktopImagePin.sln
+dotnet format DesktopImagePin.sln --verify-no-changes --no-restore
+dotnet build DesktopImagePin.sln -c Release --no-restore
+dotnet test DesktopImagePin.sln -c Release --no-build
+```
+
+Publish a self-contained Windows x64 executable:
+
+```powershell
+dotnet publish DesktopImagePin.csproj -c Release -r win-x64 --self-contained true `
   -p:PublishSingleFile=true `
   -p:IncludeNativeLibrariesForSelfExtract=true `
   -p:EnableCompressionInSingleFile=true `
@@ -59,35 +128,20 @@ dotnet publish -c Release -r win-x64 --self-contained true `
   -o publish/win-x64
 ```
 
-## Controls
+## Project Status
 
-| Action | Control |
-| --- | --- |
-| Move an image | Left-drag |
-| Resize proportionally | Mouse wheel |
-| Resize width only | `Ctrl + Mouse Wheel` |
-| Resize height only | `Alt + Mouse Wheel` |
-| Open image menu | Right-click |
-| Show/hide Hub | `Ctrl + Shift + H` |
+The project is maintained as a small Windows utility. Maintenance priorities are reliability, understandable behavior, safe local persistence, and keeping the dependency surface small. Planned work is tracked in [ROADMAP.md](ROADMAP.md) and GitHub Issues.
 
-## Saved Data
+## Documentation
 
-Layout data is stored in:
-
-```text
-%LocalAppData%\DesktopImagePin\images.json
-```
-
-The app stores image paths and layout settings only. Clipboard and URL images are saved under `%LocalAppData%\DesktopImagePin\ImportedImages` so they can be restored later. URL downloads are limited to 25 MB.
-
-## Notes
-
-- Closing the Hub hides it; it does not exit the app.
-- Exit from the Hub or system tray menu.
-- A missing image file is skipped during startup restoration.
-- Click-through images must be turned off from the Hub before they can receive mouse input again.
-- Another application may already use `Ctrl + Shift + H`; the app will show a warning if registration fails.
+- [Architecture](docs/ARCHITECTURE.md)
+- [Testing](docs/TESTING.md)
+- [Development log](DEVELOPMENT_LOG.md)
+- [Changelog](CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+Desktop Image Pin is available under the [MIT License](LICENSE).

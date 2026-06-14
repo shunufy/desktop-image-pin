@@ -13,13 +13,13 @@ public sealed class ImageStateStore
 
     private readonly string _filePath;
 
-    public ImageStateStore()
+    public ImageStateStore(string? filePath = null)
     {
         var appDataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "DesktopImagePin");
 
-        _filePath = Path.Combine(appDataDirectory, "images.json");
+        _filePath = filePath ?? Path.Combine(appDataDirectory, "images.json");
     }
 
     public IReadOnlyList<SavedImageState> Load()

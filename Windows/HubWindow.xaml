@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Desktop Image Pin"
         Width="1120"
-        Height="600"
+        Height="650"
         MinWidth="900"
-        MinHeight="440"
+        MinHeight="500"
         WindowStartupLocation="CenterScreen"
         AllowDrop="True"
         DragOver="Window_DragOver"
@@ -18,227 +18,303 @@
             <TextBlock Margin="0,4,0,14"
                        Foreground="#666666"
                        Text="Ctrl + Shift + H: Toggle Hub   Ctrl + Wheel: Width   Alt + Wheel: Height" />
-            <Border Margin="0,0,0,12"
-                    Padding="10"
-                    Background="#F3F6FA"
-                    BorderBrush="#D7DEE8"
-                    BorderThickness="1"
-                    CornerRadius="4">
-                <TextBlock HorizontalAlignment="Center"
-                           Foreground="#526173"
-                           Text="Drag and drop images here (multiple files supported)" />
-            </Border>
         </StackPanel>
 
-        <WrapPanel DockPanel.Dock="Bottom"
-                   Margin="0,14,0,0"
-                   HorizontalAlignment="Right">
-            <Button Width="110"
-                    Height="34"
-                    Margin="0,0,8,0"
-                    Click="AddImageButton_Click"
-                    Content="Add Images" />
-            <Button Width="150"
-                    Height="34"
-                    Margin="0,0,8,0"
-                    Click="AddClipboardImageButton_Click"
-                    Content="From Clipboard" />
-            <Button Width="120"
-                    Height="34"
-                    Margin="0,0,8,0"
-                    Click="AddImageFromUrlButton_Click"
-                    Content="From URL" />
-            <Button Width="130"
-                    Height="34"
-                    Margin="0,0,8,0"
-                    Click="DuplicateSelectedButton_Click"
-                    Content="Duplicate" />
-            <Button Width="90"
-                    Height="34"
-                    Margin="0,0,8,0"
-                    Click="RemoveAllButton_Click"
-                    Content="Remove All" />
-            <Button Width="90"
-                    Height="34"
-                    Click="ExitButton_Click"
-                    Content="Exit" />
-        </WrapPanel>
+        <Button DockPanel.Dock="Bottom"
+                Width="90"
+                Height="34"
+                Margin="0,14,0,0"
+                HorizontalAlignment="Right"
+                Click="ExitButton_Click"
+                Content="Exit" />
 
-        <GroupBox>
-            <GroupBox.Header>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Displayed Images" />
-                    <TextBlock Margin="8,0,0,0"
-                               FontSize="11"
-                               Foreground="#777777"
-                               Text="{Binding ImageCount, StringFormat=Showing {0} images}" />
-                </StackPanel>
-            </GroupBox.Header>
-            <ListBox x:Name="ImagesListBox"
-                     ItemsSource="{Binding Items}"
-                     BorderThickness="0"
-                     HorizontalContentAlignment="Stretch"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Border Margin="0,3"
-                                Padding="10"
-                                BorderBrush="#DDDDDD"
-                                BorderThickness="1"
-                                CornerRadius="4">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+        <TabControl>
+            <TabItem Header="Images">
+                <DockPanel Margin="10">
+                    <Border DockPanel.Dock="Top"
+                            Margin="0,0,0,12"
+                            Padding="10"
+                            Background="#F3F6FA"
+                            BorderBrush="#D7DEE8"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                        <TextBlock HorizontalAlignment="Center"
+                                   Foreground="#526173"
+                                   Text="Drag and drop images here (multiple files supported)" />
+                    </Border>
 
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" MinWidth="0" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Margin="0,0,8,0">
-                                    <TextBlock FontWeight="SemiBold"
-                                               Text="{Binding DisplayName}"
-                                               TextTrimming="CharacterEllipsis"
-                                               ToolTip="{Binding FilePath}" />
-                                    <TextBlock Margin="0,3,0,0"
-                                               Foreground="#777777"
-                                               Text="{Binding FilePath}"
-                                               TextTrimming="CharacterEllipsis"
-                                               ToolTip="{Binding FilePath}" />
-                                    </StackPanel>
-                                    <TextBlock Grid.Column="1"
-                                               Margin="12,0,0,0"
-                                               VerticalAlignment="Center"
-                                               Foreground="#666666"
-                                               Text="{Binding TransformText}" />
-                                </Grid>
+                    <WrapPanel DockPanel.Dock="Bottom"
+                               Margin="0,14,0,0"
+                               HorizontalAlignment="Right">
+                        <Button Width="110"
+                                Height="34"
+                                Margin="0,0,8,0"
+                                Click="AddImageButton_Click"
+                                Content="Add Images" />
+                        <Button Width="150"
+                                Height="34"
+                                Margin="0,0,8,0"
+                                Click="AddClipboardImageButton_Click"
+                                Content="From Clipboard" />
+                        <Button Width="120"
+                                Height="34"
+                                Margin="0,0,8,0"
+                                Click="AddImageFromUrlButton_Click"
+                                Content="From URL" />
+                        <Button Width="130"
+                                Height="34"
+                                Margin="0,0,8,0"
+                                Click="DuplicateSelectedButton_Click"
+                                Content="Duplicate" />
+                        <Button Width="90"
+                                Height="34"
+                                Click="RemoveAllButton_Click"
+                                Content="Remove All" />
+                    </WrapPanel>
 
-                                <Grid Grid.Row="1"
-                                      Margin="0,9,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="154" />
-                                        <ColumnDefinition Width="226" />
-                                        <ColumnDefinition Width="112" />
-                                        <ColumnDefinition Width="*" MinWidth="145" />
-                                        <ColumnDefinition Width="80" />
-                                        <ColumnDefinition Width="72" />
-                                    </Grid.ColumnDefinitions>
+                    <GroupBox>
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Displayed Images" />
+                                <TextBlock Margin="8,0,0,0"
+                                           FontSize="11"
+                                           Foreground="#777777"
+                                           Text="{Binding ImageCount, StringFormat=Showing {0} images}" />
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <ListBox x:Name="ImagesListBox"
+                                 ItemsSource="{Binding Items}"
+                                 BorderThickness="0"
+                                 HorizontalContentAlignment="Stretch"
+                                 ScrollViewer.CanContentScroll="True"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 VirtualizingPanel.IsVirtualizing="True"
+                                 VirtualizingPanel.VirtualizationMode="Recycling">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,3"
+                                            Padding="10"
+                                            BorderBrush="#DDDDDD"
+                                            BorderThickness="1"
+                                            CornerRadius="4">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" MinWidth="0" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Margin="0,0,8,0">
+                                                    <TextBlock FontWeight="SemiBold"
+                                                               Text="{Binding DisplayName}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               ToolTip="{Binding FilePath}" />
+                                                    <TextBlock Margin="0,3,0,0"
+                                                               Foreground="#777777"
+                                                               Text="{Binding FilePath}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               ToolTip="{Binding FilePath}" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="1"
+                                                           Margin="12,0,0,0"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#666666"
+                                                           Text="{Binding TransformText}" />
+                                            </Grid>
 
-                                    <StackPanel Margin="0,0,8,0"
-                                                VerticalAlignment="Center">
-                                    <TextBlock HorizontalAlignment="Center"
-                                               FontSize="11"
-                                               Foreground="#777777"
-                                               Text="{Binding DisplayLayerText}" />
-                                    <StackPanel Margin="0,3,0,0"
-                                                Orientation="Horizontal">
-                                        <Button Width="46"
-                                                Height="26"
-                                                Margin="0,0,3,0"
-                                                Tag="{Binding}"
-                                                Click="SetTopmostButton_Click"
-                                                Content="Top" />
-                                        <Button Width="46"
-                                                Height="26"
-                                                Margin="0,0,3,0"
-                                                Tag="{Binding}"
-                                                Click="SetNormalLayerButton_Click"
-                                                Content="Normal" />
-                                        <Button Width="46"
-                                                Height="26"
-                                                Tag="{Binding}"
-                                                Click="SetBottommostButton_Click"
-                                                Content="Back" />
-                                    </StackPanel>
-                                    </StackPanel>
+                                            <Grid Grid.Row="1" Margin="0,9,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="154" />
+                                                    <ColumnDefinition Width="226" />
+                                                    <ColumnDefinition Width="112" />
+                                                    <ColumnDefinition Width="*" MinWidth="145" />
+                                                    <ColumnDefinition Width="80" />
+                                                    <ColumnDefinition Width="72" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Margin="0,0,8,0" VerticalAlignment="Center">
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               FontSize="11"
+                                                               Foreground="#777777"
+                                                               Text="{Binding DisplayLayerText}" />
+                                                    <StackPanel Margin="0,3,0,0" Orientation="Horizontal">
+                                                        <Button Width="46" Height="26" Margin="0,0,3,0"
+                                                                Tag="{Binding}" Click="SetTopmostButton_Click"
+                                                                Content="Top" />
+                                                        <Button Width="46" Height="26" Margin="0,0,3,0"
+                                                                Tag="{Binding}" Click="SetNormalLayerButton_Click"
+                                                                Content="Normal" />
+                                                        <Button Width="46" Height="26"
+                                                                Tag="{Binding}" Click="SetBottommostButton_Click"
+                                                                Content="Back" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               FontSize="11"
+                                                               Foreground="#777777"
+                                                               Text="Rotate / Flip" />
+                                                    <StackPanel Margin="0,3,0,0" Orientation="Horizontal">
+                                                        <Button Width="50" Height="26" Margin="0,0,4,0"
+                                                                Tag="{Binding}" Click="RotateLeftButton_Click"
+                                                                Content="Left 90°" />
+                                                        <Button Width="50" Height="26" Margin="0,0,4,0"
+                                                                Tag="{Binding}" Click="RotateRightButton_Click"
+                                                                Content="Right 90°" />
+                                                        <Button Width="54" Height="26" Margin="0,0,4,0"
+                                                                Tag="{Binding}" Click="FlipHorizontalButton_Click"
+                                                                Content="Flip H" />
+                                                        <Button Width="54" Height="26"
+                                                                Tag="{Binding}" Click="FlipVerticalButton_Click"
+                                                                Content="Flip V" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <CheckBox Grid.Column="2"
+                                                          Margin="4,0,8,0"
+                                                          VerticalAlignment="Center"
+                                                          HorizontalAlignment="Center"
+                                                          IsChecked="{Binding IsClickThrough, Mode=OneWay}"
+                                                          Tag="{Binding}"
+                                                          Click="ClickThroughCheckBox_Click"
+                                                          Content="Click-through" />
+                                                <Grid Grid.Column="3" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock HorizontalAlignment="Center"
+                                                               FontSize="11"
+                                                               Foreground="#777777"
+                                                               Text="{Binding OpacityPercent, StringFormat=Opacity {0}%}" />
+                                                    <Slider Grid.Row="1"
+                                                            Margin="6,3"
+                                                            Minimum="10"
+                                                            Maximum="100"
+                                                            TickFrequency="5"
+                                                            Value="{Binding Opacity, Converter={StaticResource OpacityPercentConverter}, Mode=OneWay}"
+                                                            Tag="{Binding}"
+                                                            ValueChanged="OpacitySlider_ValueChanged" />
+                                                </Grid>
+                                                <Button Grid.Column="4"
+                                                        Width="72" Height="30"
+                                                        HorizontalAlignment="Left"
+                                                        Tag="{Binding}"
+                                                        Click="ChangeImageButton_Click"
+                                                        Content="Change" />
+                                                <Button Grid.Column="5"
+                                                        Width="72" Height="30"
+                                                        HorizontalAlignment="Left"
+                                                        Tag="{Binding}"
+                                                        Click="RemoveImageButton_Click"
+                                                        Content="Remove" />
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
+                </DockPanel>
+            </TabItem>
 
-                                    <StackPanel Grid.Column="1"
-                                                Margin="0,0,8,0"
-                                                VerticalAlignment="Center">
-                                        <TextBlock HorizontalAlignment="Center"
-                                                   FontSize="11"
-                                                   Foreground="#777777"
-                                                   Text="Rotate / Flip" />
-                                        <StackPanel Margin="0,3,0,0"
-                                                    Orientation="Horizontal">
-                                            <Button Width="50"
-                                                    Height="26"
-                                                    Margin="0,0,4,0"
-                                                    Tag="{Binding}"
-                                                    Click="RotateLeftButton_Click"
-                                                    Content="Left 90°" />
-                                            <Button Width="50"
-                                                    Height="26"
-                                                    Margin="0,0,4,0"
-                                                    Tag="{Binding}"
-                                                    Click="RotateRightButton_Click"
-                                                    Content="Right 90°" />
-                                            <Button Width="54"
-                                                    Height="26"
-                                                    Margin="0,0,4,0"
-                                                    Tag="{Binding}"
-                                                    Click="FlipHorizontalButton_Click"
-                                                    Content="Flip H" />
-                                            <Button Width="54"
-                                                    Height="26"
-                                                    Tag="{Binding}"
-                                                    Click="FlipVerticalButton_Click"
-                                                    Content="Flip V" />
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <CheckBox Grid.Column="2"
-                                              Margin="4,0,8,0"
-                                              VerticalAlignment="Center"
-                                              HorizontalAlignment="Center"
-                                              IsChecked="{Binding IsClickThrough, Mode=OneWay}"
-                                              Tag="{Binding}"
-                                              Click="ClickThroughCheckBox_Click"
-                                              Content="Click-through" />
-
-                                    <Grid Grid.Column="3"
-                                          Margin="0,0,8,0"
-                                          VerticalAlignment="Center">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock HorizontalAlignment="Center"
-                                                   FontSize="11"
-                                                   Foreground="#777777"
-                                                   Text="{Binding OpacityPercent, StringFormat=Opacity {0}%}" />
-                                        <Slider Grid.Row="1"
-                                                Margin="6,3"
-                                                Minimum="10"
-                                                Maximum="100"
-                                                TickFrequency="5"
-                                                Value="{Binding Opacity, Converter={StaticResource OpacityPercentConverter}, Mode=OneWay}"
-                                                Tag="{Binding}"
-                                                ValueChanged="OpacitySlider_ValueChanged" />
-                                    </Grid>
-
-                                    <Button Grid.Column="4"
-                                            Width="72"
-                                            Height="30"
-                                            HorizontalAlignment="Left"
-                                            Tag="{Binding}"
-                                            Click="ChangeImageButton_Click"
-                                            Content="Change" />
-                                    <Button Grid.Column="5"
-                                            Width="72"
-                                            Height="30"
-                                            HorizontalAlignment="Left"
-                                            Tag="{Binding}"
-                                            Click="RemoveImageButton_Click"
-                                            Content="Remove" />
-                                </Grid>
+            <TabItem Header="Imports">
+                <DockPanel Margin="10">
+                    <Border DockPanel.Dock="Top"
+                            Padding="12"
+                            Background="#F3F6FA"
+                            BorderBrush="#D7DEE8"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Foreground="#526173"
+                                       Text="The image is downloaded once when saved. Later sessions use the local cached file." />
+                            <Grid Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" MinWidth="280" />
+                                    <ColumnDefinition Width="*" MinWidth="150" />
+                                    <ColumnDefinition Width="90" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Margin="2,0,0,3" Text="Image URL" />
+                                    <TextBox x:Name="ImportUrlTextBox"
+                                             Height="30"
+                                             VerticalContentAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                    <TextBlock Margin="2,0,0,3" Text="Name" />
+                                    <TextBox x:Name="ImportNameTextBox"
+                                             Height="30"
+                                             VerticalContentAlignment="Center" />
+                                </StackPanel>
+                                <Button x:Name="SaveUrlImportButton"
+                                        Grid.Column="2"
+                                        Height="30"
+                                        Margin="0,21,0,0"
+                                        Click="SaveUrlImportButton_Click"
+                                        Content="Save" />
                             </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </GroupBox>
+                        </StackPanel>
+                    </Border>
+
+                    <GroupBox Margin="0,12,0,0" Header="Saved URL Images">
+                        <ListBox x:Name="UrlImportsListBox"
+                                 BorderThickness="0"
+                                 HorizontalContentAlignment="Stretch"
+                                 ScrollViewer.CanContentScroll="True"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 VirtualizingPanel.IsVirtualizing="True"
+                                 VirtualizingPanel.VirtualizationMode="Recycling">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,3"
+                                            Padding="10"
+                                            BorderBrush="#DDDDDD"
+                                            BorderThickness="1"
+                                            CornerRadius="4">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" MinWidth="0" />
+                                                <ColumnDefinition Width="72" />
+                                                <ColumnDefinition Width="72" />
+                                                <ColumnDefinition Width="72" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Margin="0,0,12,0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock FontWeight="SemiBold"
+                                                               Text="{Binding Name}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Margin="10,0,0,0"
+                                                               Foreground="#607080"
+                                                               Text="{Binding CacheStatus}" />
+                                                </StackPanel>
+                                                <TextBlock Margin="0,3,0,0"
+                                                           Foreground="#777777"
+                                                           Text="{Binding Url}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           ToolTip="{Binding Url}" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Width="64" Height="30"
+                                                    Tag="{Binding}"
+                                                    Click="DisplayUrlImportButton_Click"
+                                                    Content="Display" />
+                                            <Button Grid.Column="2" Width="64" Height="30"
+                                                    Tag="{Binding}"
+                                                    Click="RefreshUrlImportButton_Click"
+                                                    Content="Refresh" />
+                                            <Button Grid.Column="3" Width="64" Height="30"
+                                                    Tag="{Binding}"
+                                                    Click="DeleteUrlImportButton_Click"
+                                                    Content="Delete" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>

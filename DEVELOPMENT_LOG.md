@@ -1,0 +1,28 @@
+# Development Log
+
+This log summarizes repository-visible development milestones. It does not claim download counts, active users, or adoption metrics.
+
+## 2026-06-06 - Local Prototype
+
+- Created the .NET 8 WPF application and transparent image-window model.
+- Added multiple independent image windows, drag movement, wheel scaling, replacement, deletion, and per-image display layers.
+- Added the Hub window and global `Ctrl + Shift + H` hotkey.
+- Added automatic initial scaling for images larger than the desktop work area.
+
+## 2026-06-07 - Persistence And Interaction
+
+- Added layout restoration for image paths, positions, horizontal and vertical scales, and display layers.
+- Added drag-and-drop import, system tray support, and image duplication.
+- Added independent width and height scaling with modifier keys.
+- Added click-through mode, opacity, rotation, flipping, clipboard import, URL import, and displayed-image count.
+- Published the initial public repository and tagged `v1.0.0` and `v1.1.0`.
+- Fixed a URL-import file-lock issue by closing the download stream before image validation.
+
+## 2026-06-14 - OSS Readiness
+
+- Integrated a named URL import library that stores cached local copies.
+- Added a solution and automated tests for persistence, transform normalization, and import path handling.
+- Added CI for formatting, build, tests, dependency audit, and publish artifacts.
+- Expanded English and Japanese documentation.
+- Added contribution, security, roadmap, changelog, issue-template, pull-request-template, and dependency-license documentation.
+- Added actual application screenshots and release preparation for `v1.2.0`.
