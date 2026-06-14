@@ -19,7 +19,7 @@ NuGet package metadata was checked for the direct and transitive test dependenci
 - Apache-2.0: `xunit`, `xunit.runner.visualstudio`, `xunit.abstractions`, `xunit.analyzers`, `xunit.assert`, `xunit.core`, `xunit.extensibility.core`, and `xunit.extensibility.execution`
 - MIT: `Microsoft.NET.Test.Sdk`, `Microsoft.CodeCoverage`, `Microsoft.TestPlatform.ObjectModel`, `Microsoft.TestPlatform.TestHost`, `Newtonsoft.Json`, `System.Collections.Immutable`, and `System.Reflection.Metadata`
 
-These packages are development-only and are not bundled into `DesktopImagePin.exe`. Exact resolved versions are recorded in `packages.lock.json` files.
+These packages are development-only and are not bundled into `DesktopImagePin.exe`. Exact resolved versions are recorded in the test project's `packages.lock.json`.
 
 ## Assets
 

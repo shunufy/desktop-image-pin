@@ -24,6 +24,7 @@ jobs:
           cache: true
           cache-dependency-path: |
             **/*.csproj
+            **/packages.lock.json
 
       - name: Restore
         run: dotnet restore DesktopImagePin.sln --locked-mode
