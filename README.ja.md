@@ -2,89 +2,83 @@
 
 [English README](README.md)
 
-Desktop Image Pin は、通常のウィンドウ枠やタイトルバーを表示せず、好きな画像をWindowsデスクトップ上へ配置できるネタ／ユーティリティアプリです。
+Desktop Image Pinは、画像を透明・枠なしの独立ウィンドウとしてWindowsデスクトップへ直接配置するツールです。資料作成中の参照画像、配信画面の飾り、視覚的なメモ、切り抜き画像、デスクトップ装飾などを、通常の画像ビューアの枠や単一キャンバスに縛られず表示できます。
 
-画像ごとに移動、縦横の拡大縮小、複製、変更、表示階層の切り替え、削除ができます。
+一般的な画像ビューアとの違いは、各画像が独立して移動・拡大縮小・前後関係変更・クリック透過・変形・複製・復元できる点です。Hubから多数の画像をまとめて管理しつつ、表示画像そのものにはタイトルバーや枠を出しません。
+
+![Desktop Image PinのHub画面](docs/images/hub.png)
 
 ## 主な機能
 
-- 複数画像の同時表示
-- 枠なし・背景透明の画像ウィンドウ
-- 左ドラッグによる移動
-- マウスホイールによる縦横比を維持した拡大縮小
-- `Ctrl + マウスホイール` で横幅だけ変更
-- `Alt + マウスホイール` で高さだけ変更
-- 画像ごとに最前面・通常・最背面を設定
-- 画像ごとのクリック透過ON/OFF
-- 透明度を10～100%で調整
-- Hubから左右90度回転・左右反転・上下反転
-- 画像の変更・複製・削除
-- Hubまたは画像ウィンドウへの複数ファイルのドラッグ＆ドロップ
-- クリップボードの画像または画像ファイルから追加
-- HTTP/HTTPSの画像URLから追加
-- 画像パス、位置、縦横倍率、表示階層の保存と次回起動時の復元
+- 複数画像を透明・枠なしウィンドウとして表示
+- 左ドラッグ移動、ホイール拡大縮小
+- `Ctrl + ホイール`で横幅のみ、`Alt + ホイール`で高さのみ変更
+- 大きな画像を初回表示時に作業領域の90%以内へ自動縮小
+- 画像ごとの最前面・通常・背面表示
+- クリック透過、透明度、90度回転、左右・上下反転
+- 画像変更、複製、個別削除、全削除
+- 複数ファイルのドラッグ＆ドロップ
+- クリップボードとHTTP/HTTPS URLからの取り込み
+- 名前付きURL画像をローカル保存し、毎回取得せず再利用
+- 位置、縦横の拡大率、前後関係、透明度、変形、クリック透過を復元
 - タスクトレイ常駐
-- `Ctrl + Shift + H` でHubの表示・非表示を切り替え
-- 大きな画像を初回表示時にデスクトップ作業領域の90%以内へ自動縮小
-- Hubに現在表示中の画像枚数を表示
+- `Ctrl + Shift + H`でHubを表示・非表示
+- Hubに現在の表示枚数を表示
 
-対応形式: PNG、JPEG、BMP、GIF、TIFF。GIFアニメーションは先頭フレームのみ表示します。
+## 対応画像形式
 
-## 必要環境
+PNG、JPEG、BMP、GIF、TIFFに対応します。GIFは先頭フレームのみ表示します。URL画像は25MBまでです。
 
-- Windows 10 または Windows 11
-- ソースからビルドする場合は .NET 8 SDK
+## インストール
 
-## ソースから実行
+1. [最新のGitHub Release](https://github.com/shunufy/desktop-image-pin/releases/latest)から`DesktopImagePin.exe`をダウンロードします。
+2. 任意のフォルダーへ配置します。
+3. EXEをダブルクリックします。
 
-```powershell
-dotnet run
-```
+配布EXEはWindows x64向け自己完結型なので、.NETランタイムの別途インストールは不要です。
 
-## ビルド
+## ソースから起動
 
-```powershell
-dotnet build -c Release
-```
-
-Windows x64向け自己完結型単一EXE:
+Windows 10または11と.NET 8 SDKが必要です。
 
 ```powershell
-dotnet publish -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true `
-  -p:IncludeNativeLibrariesForSelfExtract=true `
-  -p:EnableCompressionInSingleFile=true `
-  -p:DebugType=None `
-  -p:DebugSymbols=false `
-  -o publish/win-x64
+git clone https://github.com/shunufy/desktop-image-pin.git
+cd desktop-image-pin
+dotnet restore DesktopImagePin.sln
+dotnet run --project DesktopImagePin.csproj
 ```
 
-## 操作
+## 操作方法
 
-| 操作 | 入力 |
+| 操作 | 方法 |
 | --- | --- |
-| 画像の移動 | 左ドラッグ |
-| 縦横比を維持して拡大縮小 | マウスホイール |
-| 横幅だけ変更 | `Ctrl + マウスホイール` |
-| 高さだけ変更 | `Alt + マウスホイール` |
+| 画像移動 | 左ドラッグ |
 | 画像メニュー | 右クリック |
-| Hubの表示切り替え | `Ctrl + Shift + H` |
+| 縦横比を保って拡大縮小 | マウスホイール |
+| 横幅のみ変更 | `Ctrl + マウスホイール` |
+| 高さのみ変更 | `Alt + マウスホイール` |
+| Hub表示切り替え | `Ctrl + Shift + H` |
+| クリック透過解除 | Hubから対象画像の設定を解除 |
+| 完全終了 | Hubの「Exit」またはタスクトレイ |
+
+Hubの**Images**タブで表示中画像を管理し、**Imports**タブで名前付きURL画像を保存・表示・再取得できます。
 
 ## 保存データ
 
 ```text
 %LocalAppData%\DesktopImagePin\images.json
+%LocalAppData%\DesktopImagePin\url-imports.json
+%LocalAppData%\DesktopImagePin\ImportedImages\
 ```
 
-画像パスと配置設定を保存します。クリップボード画像とURL画像は、次回復元できるよう `%LocalAppData%\DesktopImagePin\ImportedImages` に保存されます。URLからのダウンロード上限は25MBです。
+`images.json`にはローカルファイルパスが含まれます。公開Issueへ添付する際は個人情報を削除してください。
 
-## 注意点
+## 開発と保守
 
-- Hubの閉じるボタンはアプリ終了ではなく非表示です。
-- 終了する場合はHubまたはタスクトレイの「Exit」を使用してください。
-- 起動時に画像ファイルが見つからない場合、その画像は復元されません。
-- クリック透過を有効にした画像は、Hubからクリック透過をOFFにすると再びマウス操作できます。
+このプロジェクトは小規模なWindowsユーティリティとして継続保守します。安定性、分かりやすい操作、安全なローカル保存、依存関係を増やしすぎないことを優先します。今後の予定は[ROADMAP.md](ROADMAP.md)とGitHub Issuesで管理します。
+
+ビルド・テスト方法は英語READMEと[docs/TESTING.md](docs/TESTING.md)を参照してください。
 
 ## ライセンス
 
-MIT Licenseです。詳細は [LICENSE](LICENSE) を参照してください。
+[MIT License](LICENSE)です。

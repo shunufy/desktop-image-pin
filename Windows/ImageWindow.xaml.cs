@@ -8,10 +8,10 @@ using System.Windows.Threading;
 using DesktopImagePin.Models;
 using DesktopImagePin.Services;
 using Microsoft.Win32;
-using DragEventArgs = System.Windows.DragEventArgs;
-using IDataObject = System.Windows.IDataObject;
 using DataFormats = System.Windows.DataFormats;
 using DragDropEffects = System.Windows.DragDropEffects;
+using DragEventArgs = System.Windows.DragEventArgs;
+using IDataObject = System.Windows.IDataObject;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
@@ -127,7 +127,7 @@ public partial class ImageWindow : Window
 
         if (updatedStyle != extendedStyle)
         {
-            SetWindowLong(handle, GwlExStyle, updatedStyle);
+            _ = SetWindowLong(handle, GwlExStyle, updatedStyle);
             SetWindowPos(
                 handle,
                 IntPtr.Zero,

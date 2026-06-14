@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+
+      - name: Restore
+        run: dotnet restore DesktopImagePin.sln --locked-mode
+
+      - name: Verify formatting
+        run: dotnet format DesktopImagePin.sln --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build DesktopImagePin.sln -c Release --no-restore -warnaserror
+
+      - name: Test
+        run: dotnet test DesktopImagePin.sln -c Release --no-build --logger "trx;LogFileName=test-results.trx"
+
+      - name: Audit NuGet packages
+        run: dotnet list DesktopImagePin.sln package --vulnerable --include-transitive
+
+      - name: Publish Windows x64
+        run: >
+          dotnet publish DesktopImagePin.csproj -c Release -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -p:DebugType=None
+          -p:DebugSymbols=false
+          -o publish/win-x64
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: warn
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: DesktopImagePin-win-x64
+          path: publish/win-x64/DesktopImagePin.exe

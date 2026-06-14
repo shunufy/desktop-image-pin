@@ -1,6 +1,5 @@
 using System.IO;
 using System.Net.Http;
-using System.Windows;
 using System.Windows.Media.Imaging;
 using Clipboard = System.Windows.Clipboard;
 
@@ -8,7 +7,8 @@ namespace DesktopImagePin.Services;
 
 public sealed class ImageImportService
 {
-    private const long MaximumDownloadBytes = 25 * 1024 * 1024;
+    public const long MaximumDownloadBytes = 25 * 1024 * 1024;
+
     private static readonly HttpClient HttpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(30)
@@ -16,12 +16,33 @@ public sealed class ImageImportService
 
     private readonly string _importDirectory;
 
-    public ImageImportService()
+    public ImageImportService(string? importDirectory = null)
     {
-        _importDirectory = Path.Combine(
+        _importDirectory = importDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "DesktopImagePin",
             "ImportedImages");
+    }
+
+    public bool IsManagedFile(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var importDirectory = Path.GetFullPath(_importDirectory)
+                .TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            var candidatePath = Path.GetFullPath(filePath);
+
+            return candidatePath.StartsWith(importDirectory, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public string? ImportClipboardImage()
@@ -50,10 +71,14 @@ public sealed class ImageImportService
 
         Directory.CreateDirectory(_importDirectory);
         var importedFilePath = CreateImportedPath(".png");
-        using var stream = File.Create(importedFilePath);
-        var encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(bitmap));
-        encoder.Save(stream);
+
+        using (var stream = File.Create(importedFilePath))
+        {
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            encoder.Save(stream);
+        }
+
         return importedFilePath;
     }
 
@@ -79,6 +104,21 @@ public sealed class ImageImportService
         Directory.CreateDirectory(_importDirectory);
         var filePath = CreateImportedPath(extension);
 
+        try
+        {
+            await DownloadToFileAsync(response, filePath);
+            ValidateImage(filePath);
+            return filePath;
+        }
+        catch
+        {
+            TryDeleteFile(filePath);
+            throw;
+        }
+    }
+
+    private static async Task DownloadToFileAsync(HttpResponseMessage response, string filePath)
+    {
         await using var source = await response.Content.ReadAsStreamAsync();
         await using var destination = File.Create(filePath);
         var buffer = new byte[81920];
@@ -95,17 +135,17 @@ public sealed class ImageImportService
             totalBytes += bytesRead;
             if (totalBytes > MaximumDownloadBytes)
             {
-                destination.Close();
-                File.Delete(filePath);
                 throw new InvalidOperationException("The image exceeds the 25 MB download limit.");
             }
 
             await destination.WriteAsync(buffer.AsMemory(0, bytesRead));
         }
+    }
 
+    private static void ValidateImage(string filePath)
+    {
         if (!ImageManager.IsSupportedImageFile(filePath))
         {
-            File.Delete(filePath);
             throw new InvalidOperationException("This image format is not supported.");
         }
 
@@ -116,18 +156,21 @@ public sealed class ImageImportService
                 validationStream,
                 BitmapCreateOptions.PreservePixelFormat,
                 BitmapCacheOption.OnLoad);
+
             if (decoder.Frames.Count == 0)
             {
                 throw new InvalidOperationException();
             }
         }
+        catch (InvalidOperationException exception)
+            when (exception.Message is "This image format is not supported.")
+        {
+            throw;
+        }
         catch
         {
-            File.Delete(filePath);
             throw new InvalidOperationException("The downloaded data is not a valid image.");
         }
-
-        return filePath;
     }
 
     private string CreateImportedPath(string extension)
@@ -137,7 +180,19 @@ public sealed class ImageImportService
             $"{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}{extension}");
     }
 
-    private static string GetExtension(Uri uri, string? mediaType)
+    private static void TryDeleteFile(string filePath)
+    {
+        try
+        {
+            File.Delete(filePath);
+        }
+        catch
+        {
+            // Preserve the original download or validation error.
+        }
+    }
+
+    internal static string GetExtension(Uri uri, string? mediaType)
     {
         var extension = Path.GetExtension(uri.AbsolutePath).ToLowerInvariant();
         if (extension is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif" or ".tif" or ".tiff")

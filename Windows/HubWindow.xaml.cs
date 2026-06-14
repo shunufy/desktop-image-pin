@@ -1,18 +1,19 @@
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using DesktopImagePin.Models;
 using DesktopImagePin.Services;
 using Microsoft.Win32;
-using DragEventArgs = System.Windows.DragEventArgs;
-using IDataObject = System.Windows.IDataObject;
 using Button = System.Windows.Controls.Button;
+using CheckBox = System.Windows.Controls.CheckBox;
 using DataFormats = System.Windows.DataFormats;
 using DragDropEffects = System.Windows.DragDropEffects;
+using DragEventArgs = System.Windows.DragEventArgs;
+using IDataObject = System.Windows.IDataObject;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
-using CheckBox = System.Windows.Controls.CheckBox;
 using Slider = System.Windows.Controls.Slider;
 
 namespace DesktopImagePin.Windows;
@@ -21,6 +22,7 @@ public partial class HubWindow : Window
 {
     private readonly ImageManager _imageManager;
     private readonly ImageImportService _imageImportService = new();
+    private readonly UrlImportLibrary _urlImportLibrary;
     private GlobalHotkeyService? _hotkeyService;
 
     public HubWindow(ImageManager imageManager)
@@ -28,7 +30,9 @@ public partial class HubWindow : Window
         InitializeComponent();
 
         _imageManager = imageManager;
+        _urlImportLibrary = new UrlImportLibrary(_imageImportService);
         DataContext = imageManager;
+        UrlImportsListBox.ItemsSource = _urlImportLibrary.Items;
 
         SourceInitialized += HubWindow_SourceInitialized;
         Closing += HubWindow_Closing;
@@ -65,7 +69,7 @@ public partial class HubWindow : Window
     {
         var wasEmpty = _imageManager.Items.Count == 0;
         var filePaths = SelectImageFiles();
-        if (filePaths.Count == 0)
+        if (filePaths.Length == 0)
         {
             return;
         }
@@ -138,6 +142,98 @@ public partial class HubWindow : Window
         {
             ShowImageError(ex);
         }
+    }
+
+    private async void SaveUrlImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        SaveUrlImportButton.IsEnabled = false;
+
+        try
+        {
+            var savedItem = await _urlImportLibrary.SaveAsync(
+                ImportNameTextBox.Text,
+                ImportUrlTextBox.Text);
+
+            UrlImportsListBox.SelectedItem = savedItem;
+            UrlImportsListBox.ScrollIntoView(savedItem);
+            ImportUrlTextBox.Clear();
+            ImportNameTextBox.Clear();
+        }
+        catch (Exception ex)
+        {
+            ShowImageError(ex);
+        }
+        finally
+        {
+            SaveUrlImportButton.IsEnabled = true;
+        }
+    }
+
+    private void DisplayUrlImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not SavedUrlImport item)
+        {
+            return;
+        }
+
+        if (!File.Exists(item.LocalFilePath))
+        {
+            MessageBox.Show(
+                this,
+                "The cached image file is missing. Refresh this entry to download it again.",
+                "Cached Image Missing",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            _imageManager.AddImage(item.LocalFilePath);
+        }
+        catch (Exception ex)
+        {
+            ShowImageError(ex);
+        }
+    }
+
+    private async void RefreshUrlImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: SavedUrlImport item } button)
+        {
+            return;
+        }
+
+        button.IsEnabled = false;
+
+        try
+        {
+            await _urlImportLibrary.RefreshAsync(item);
+        }
+        catch (Exception ex)
+        {
+            ShowImageError(ex);
+        }
+        finally
+        {
+            button.IsEnabled = true;
+        }
+    }
+
+    private void DeleteUrlImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not SavedUrlImport item)
+        {
+            return;
+        }
+
+        var isDisplayed = _imageManager.Items.Any(
+            image => string.Equals(
+                image.FilePath,
+                item.LocalFilePath,
+                StringComparison.OrdinalIgnoreCase));
+
+        _urlImportLibrary.Delete(item, deleteCachedFile: !isDisplayed);
     }
 
     private void ChangeImageButton_Click(object sender, RoutedEventArgs e)
@@ -259,15 +355,15 @@ public partial class HubWindow : Window
 
     private void ChangeImage(ImageItem item)
     {
-        var filePath = SelectImageFiles().FirstOrDefault();
-        if (filePath is null)
+        var filePaths = SelectImageFiles();
+        if (filePaths.Length == 0)
         {
             return;
         }
 
         try
         {
-            _imageManager.ChangeImage(item, filePath);
+            _imageManager.ChangeImage(item, filePaths[0]);
         }
         catch (Exception ex)
         {
@@ -275,7 +371,7 @@ public partial class HubWindow : Window
         }
     }
 
-    private IReadOnlyList<string> SelectImageFiles()
+    private string[] SelectImageFiles()
     {
         var dialog = new OpenFileDialog
         {

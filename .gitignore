@@ -1,9 +1,36 @@
+# .NET build outputs
 bin/
 obj/
 publish/
+artifacts/
+TestResults/
+*.dll
+*.exe
+*.pdb
+*.zip
+
+# IDE and user settings
 .vs/
+.vscode/
+.idea/
 *.user
 *.suo
-*.pdb
-*.exe
-*.zip
+*.userosscache
+*.sln.docstates
+
+# Local verification and logs
+.verification/
+*.log
+*.trx
+coverage/
+coverage.*
+
+# OS metadata
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local application data must never be committed
+images.json
+url-imports.json
+ImportedImages/
