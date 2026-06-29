@@ -4,6 +4,13 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-06-29
+
+### Added
+
+- Hub option to start Desktop Image Pin automatically when Windows starts.
+- Tests for startup registry command generation and enable/disable behavior.
+
 ## [1.2.0] - 2026-06-14
 
 ### Added
@@ -42,7 +49,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Layout persistence and restoration.
 - System tray integration and global Hub hotkey.
 
-[Unreleased]: https://github.com/shunufy/desktop-image-pin/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/shunufy/desktop-image-pin/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/shunufy/desktop-image-pin/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/shunufy/desktop-image-pin/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/shunufy/desktop-image-pin/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/shunufy/desktop-image-pin/releases/tag/v1.0.0

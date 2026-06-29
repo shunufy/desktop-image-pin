@@ -22,6 +22,7 @@ Desktop Image Pinは、画像を透明・枠なしの独立ウィンドウとし
 - 名前付きURL画像をローカル保存し、毎回取得せず再利用
 - 位置、縦横の拡大率、前後関係、透明度、変形、クリック透過を復元
 - タスクトレイ常駐
+- Windows起動時の自動起動
 - `Ctrl + Shift + H`でHubを表示・非表示
 - Hubに現在の表示枚数を表示
 
@@ -58,6 +59,7 @@ dotnet run --project DesktopImagePin.csproj
 | 横幅のみ変更 | `Ctrl + マウスホイール` |
 | 高さのみ変更 | `Alt + マウスホイール` |
 | Hub表示切り替え | `Ctrl + Shift + H` |
+| Windows起動時に自動起動 | Hubの「Start Desktop Image Pin when Windows starts」を有効化 |
 | クリック透過解除 | Hubから対象画像の設定を解除 |
 | 完全終了 | Hubの「Exit」またはタスクトレイ |
 
@@ -72,6 +74,12 @@ Hubの**Images**タブで表示中画像を管理し、**Imports**タブで名�
 ```
 
 `images.json`にはローカルファイルパスが含まれます。公開Issueへ添付する際は個人情報を削除してください。
+
+自動起動設定を有効にした場合は、現在のユーザーの以下のレジストリ値にEXEパスを保存します。
+
+```text
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run\DesktopImagePin
+```
 
 ## 開発と保守
 
