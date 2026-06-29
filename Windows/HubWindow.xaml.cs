@@ -22,6 +22,7 @@ public partial class HubWindow : Window
 {
     private readonly ImageManager _imageManager;
     private readonly ImageImportService _imageImportService = new();
+    private readonly StartupService _startupService = new();
     private readonly UrlImportLibrary _urlImportLibrary;
     private GlobalHotkeyService? _hotkeyService;
 
@@ -33,6 +34,7 @@ public partial class HubWindow : Window
         _urlImportLibrary = new UrlImportLibrary(_imageImportService);
         DataContext = imageManager;
         UrlImportsListBox.ItemsSource = _urlImportLibrary.Items;
+        RefreshStartupCheckBox();
 
         SourceInitialized += HubWindow_SourceInitialized;
         Closing += HubWindow_Closing;
@@ -63,6 +65,30 @@ public partial class HubWindow : Window
     private void AddImageButton_Click(object sender, RoutedEventArgs e)
     {
         ShowAddImageDialog();
+    }
+
+    private void StartupCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not CheckBox checkBox)
+        {
+            return;
+        }
+
+        try
+        {
+            _startupService.SetEnabled(checkBox.IsChecked == true);
+            checkBox.IsChecked = _startupService.IsEnabled();
+        }
+        catch (Exception ex)
+        {
+            RefreshStartupCheckBox();
+            MessageBox.Show(
+                this,
+                $"Could not update the Windows startup setting.\n\n{ex.Message}",
+                "Startup Setting Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     public void ShowAddImageDialog()
@@ -414,5 +440,17 @@ public partial class HubWindow : Window
             "Image Loading Error",
             MessageBoxButton.OK,
             MessageBoxImage.Error);
+    }
+
+    private void RefreshStartupCheckBox()
+    {
+        try
+        {
+            StartupCheckBox.IsChecked = _startupService.IsEnabled();
+        }
+        catch
+        {
+            StartupCheckBox.IsChecked = false;
+        }
     }
 }

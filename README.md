@@ -37,6 +37,7 @@ Unlike a normal viewer, every image can be moved, resized, layered, made click-t
 - Save named URL imports locally and reuse them without downloading on every launch
 - Restore paths, positions, independent X/Y scales, layers, opacity, transforms, and click-through state
 - Use the system tray while the Hub is hidden
+- Start automatically when Windows starts
 - Toggle the Hub globally with `Ctrl + Shift + H`
 - View the current displayed-image count
 
@@ -87,6 +88,7 @@ dotnet run --project DesktopImagePin.csproj
 | Resize height only | `Alt + Mouse Wheel` |
 | Add multiple local images | Drag and drop into the Hub |
 | Show or hide the Hub | `Ctrl + Shift + H` |
+| Start with Windows | Enable **Start Desktop Image Pin when Windows starts** in the Hub |
 | Restore a click-through image | Disable click-through from the Hub |
 | Exit completely | Hub **Exit** button or tray menu |
 
@@ -106,6 +108,12 @@ Desktop Image Pin stores data only on the local machine:
 ```
 
 `images.json` contains local file paths and display settings. Do not attach it to public issues without removing personal paths.
+
+The optional startup setting writes one current-user registry value:
+
+```text
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run\DesktopImagePin
+```
 
 ## Build And Test
 

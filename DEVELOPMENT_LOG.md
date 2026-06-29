@@ -26,3 +26,9 @@ This log summarizes repository-visible development milestones. It does not claim
 - Expanded English and Japanese documentation.
 - Added contribution, security, roadmap, changelog, issue-template, pull-request-template, and dependency-license documentation.
 - Added actual application screenshots and release preparation for `v1.2.0`.
+
+## 2026-06-29 - Startup Option
+
+- Added a Hub checkbox for optional Windows startup registration.
+- Implemented startup registration through the current-user `Run` registry key so administrator rights are not required.
+- Added unit tests for startup command generation and enable/disable behavior without touching the real registry.

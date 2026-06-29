@@ -11,7 +11,7 @@ Desktop Image Pin is a single-process .NET 8 WPF application.
 - `ImageStateStore` serializes display state to local JSON.
 - `ImageImportService` handles clipboard and bounded HTTP/HTTPS image imports.
 - `UrlImportLibrary` stores named URL entries separately from active image layout state.
-- `GlobalHotkeyService` and `TrayIconService` isolate Windows integration.
+- `GlobalHotkeyService`, `TrayIconService`, and `StartupService` isolate Windows integration.
 
 ## Persistence Separation
 
@@ -24,4 +24,4 @@ This separation allows future layout profiles or cache management without coupli
 
 ## Windows Interop
 
-The app uses `RegisterHotKey`, extended window styles, and `SetWindowPos` for the global Hub shortcut, click-through behavior, and bottommost placement. These behaviors are Windows-specific and require manual verification in addition to unit tests.
+The app uses `RegisterHotKey`, extended window styles, `SetWindowPos`, and the current-user `Run` registry key for the global Hub shortcut, click-through behavior, bottommost placement, and optional Windows startup registration. These behaviors are Windows-specific and require manual verification in addition to unit tests.

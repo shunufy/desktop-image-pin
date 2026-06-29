@@ -18,6 +18,10 @@
             <TextBlock Margin="0,4,0,14"
                        Foreground="#666666"
                        Text="Ctrl + Shift + H: Toggle Hub   Ctrl + Wheel: Width   Alt + Wheel: Height" />
+            <CheckBox x:Name="StartupCheckBox"
+                      Margin="0,0,0,14"
+                      Click="StartupCheckBox_Click"
+                      Content="Start Desktop Image Pin when Windows starts" />
         </StackPanel>
 
         <Button DockPanel.Dock="Bottom"
