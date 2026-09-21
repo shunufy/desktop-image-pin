@@ -14,4 +14,5 @@ public sealed class SavedImageState
     public bool FlipHorizontal { get; set; }
     public bool FlipVertical { get; set; }
     public bool IsClickThrough { get; set; }
+    public Guid? GroupId { get; set; }
 }

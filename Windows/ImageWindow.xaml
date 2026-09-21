@@ -16,6 +16,9 @@
                Stretch="Fill"
                SnapsToDevicePixels="True"
                MouseLeftButtonDown="DisplayedImage_MouseLeftButtonDown"
+               MouseLeftButtonUp="DisplayedImage_MouseLeftButtonUp"
+               MouseMove="DisplayedImage_MouseMove"
+               LostMouseCapture="DisplayedImage_LostMouseCapture"
                MouseWheel="DisplayedImage_MouseWheel">
             <Image.ContextMenu>
                 <ContextMenu>
@@ -28,6 +31,8 @@
                               Click="ZoomInMenuItem_Click" />
                     <MenuItem Header="Zoom Out"
                               Click="ZoomOutMenuItem_Click" />
+                    <MenuItem Header="Ungroup"
+                              Click="UngroupMenuItem_Click" />
                     <Separator />
                     <MenuItem Header="Window Layer">
                         <MenuItem x:Name="TopmostMenuItem"

@@ -19,6 +19,8 @@ public sealed class ImageItem : INotifyPropertyChanged
     private bool _flipHorizontal;
     private bool _flipVertical;
     private bool _isClickThrough;
+    private Guid? _groupId;
+    private ImageWindow? _window;
 
     public ImageItem(string filePath)
     {
@@ -219,6 +221,29 @@ public sealed class ImageItem : INotifyPropertyChanged
         }
     }
 
+    public Guid? GroupId
+    {
+        get => _groupId;
+        internal set
+        {
+            if (_groupId == value)
+            {
+                return;
+            }
+
+            _groupId = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsGrouped));
+            OnPropertyChanged(nameof(GroupText));
+        }
+    }
+
+    public bool IsGrouped => GroupId.HasValue;
+
+    public string GroupText => GroupId is Guid groupId
+        ? $"Group {groupId.ToString("N")[..6]}"
+        : "Ungrouped";
+
     public string TransformText
     {
         get
@@ -250,7 +275,28 @@ public sealed class ImageItem : INotifyPropertyChanged
         _ => "Normal"
     };
 
-    public ImageWindow? Window { get; internal set; }
+    public ImageWindow? Window
+    {
+        get => _window;
+        internal set
+        {
+            if (ReferenceEquals(_window, value))
+            {
+                return;
+            }
+
+            _window = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsUnavailable));
+            OnPropertyChanged(nameof(AvailabilityText));
+        }
+    }
+
+    public bool IsUnavailable => Window is null;
+
+    public string AvailabilityText => IsUnavailable
+        ? "Unavailable: check the file, then Retry or Change."
+        : string.Empty;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

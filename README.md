@@ -12,6 +12,8 @@ Unlike a normal viewer, every image can be moved, resized, layered, made click-t
 
 ![Desktop Image Pin Hub](docs/images/hub.png)
 
+The screenshot shows an earlier release. Version 1.4 also includes grouping, retry, and off-screen recovery controls.
+
 ## Who It Helps
 
 - Creators who keep visual references visible while working
@@ -23,6 +25,7 @@ Unlike a normal viewer, every image can be moved, resized, layered, made click-t
 
 - Display multiple images as transparent, borderless windows
 - Move each image with left-drag
+- Group selected images to move and resize them together while preserving their spacing
 - Resize proportionally with the mouse wheel
 - Resize width only with `Ctrl + Mouse Wheel`
 - Resize height only with `Alt + Mouse Wheel`
@@ -36,7 +39,11 @@ Unlike a normal viewer, every image can be moved, resized, layered, made click-t
 - Import from the clipboard or an HTTP/HTTPS URL
 - Save named URL imports locally and reuse them without downloading on every launch
 - Restore paths, positions, independent X/Y scales, layers, opacity, transforms, and click-through state
+- Autosave after about 1.5 seconds without changes, with one validated backup generation
+- Keep missing or unreadable images registered so they can be retried or relinked
+- Recover off-screen images across monitor work areas without collapsing group layouts
 - Use the system tray while the Hub is hidden
+- Reopen the existing Hub when launching an already-running instance
 - Start automatically when Windows starts
 - Toggle the Hub globally with `Ctrl + Shift + H`
 - View the current displayed-image count
@@ -59,7 +66,7 @@ URL downloads are limited to 25 MB and are validated as images before use.
 
 1. Download `DesktopImagePin.exe` from the [latest GitHub Release](https://github.com/shunufy/desktop-image-pin/releases/latest).
 2. Place it in a folder you control.
-3. Double-click the executable.
+3. Exit any older running version, then double-click the executable.
 
 The release is a self-contained Windows x64 executable; installing the .NET runtime separately is not required.
 
@@ -87,6 +94,11 @@ dotnet run --project DesktopImagePin.csproj
 | Resize width only | `Ctrl + Mouse Wheel` |
 | Resize height only | `Alt + Mouse Wheel` |
 | Add multiple local images | Drag and drop into the Hub |
+| Select multiple images | `Ctrl` or `Shift` while selecting rows in the Hub |
+| Group selected images | Select at least two rows, then **Group** |
+| Ungroup | Select a group member and choose **Ungroup**, or use its right-click menu |
+| Recover off-screen images | **Recover Off-screen** in the Hub |
+| Retry an unavailable image | **Retry** on its Hub row, or **Change** to choose a new file |
 | Show or hide the Hub | `Ctrl + Shift + H` |
 | Start with Windows | Enable **Start Desktop Image Pin when Windows starts** in the Hub |
 | Restore a click-through image | Disable click-through from the Hub |
@@ -94,8 +106,16 @@ dotnet run --project DesktopImagePin.csproj
 
 The Hub contains two tabs:
 
-- **Images** manages displayed images and their transforms, layer, opacity, replacement, and removal.
+- **Images** manages registered images, including unavailable files, and their groups, transforms, layer, opacity, replacement, and removal. The displayed-image count excludes unavailable entries.
 - **Imports** stores named URL images in a local cache. **Display** reuses the cached file, while **Refresh** downloads it again.
+
+## Grouping And Recovery
+
+Dragging any group member moves the entire group. Wheel scaling changes both image sizes and spacing; `Ctrl` and `Alt` still select the horizontal and vertical screen axes, including for rotated images. Proportional scaling stops at the first member's size limit without changing aspect ratios. Duplicates start ungrouped.
+
+Group membership survives a restart. Off-screen recovery moves a group by one shared offset. Groups larger than a monitor retain their arrangement while at least one member is made reachable.
+
+If a drive is disconnected or an image cannot be decoded, the Hub keeps its registration and settings as **Unavailable**. Use **Retry** after the file becomes available, **Change** to relink it, or **Remove** to explicitly delete the registration. A failed duplication reports an error without closing the application.
 
 ## Saved Data
 
@@ -103,17 +123,22 @@ Desktop Image Pin stores data only on the local machine:
 
 ```text
 %LocalAppData%\DesktopImagePin\images.json
+%LocalAppData%\DesktopImagePin\images.backup.json
 %LocalAppData%\DesktopImagePin\url-imports.json
 %LocalAppData%\DesktopImagePin\ImportedImages\
 ```
 
-`images.json` contains local file paths and display settings. Do not attach it to public issues without removing personal paths.
+Changes are saved after about 1.5 seconds of inactivity and on normal exit. Restoration does not trigger autosaving while items are still being loaded. `images.json` and `images.backup.json` contain local file paths and display settings; remove personal paths before sharing either file.
+
+Saved JSON is checked for valid entries and values before use. Invalid primary data falls back to the backup, and a corrupt primary is never promoted over a valid backup. Older layouts without group metadata remain compatible.
 
 The optional startup setting writes one current-user registry value:
 
 ```text
 HKCU\Software\Microsoft\Windows\CurrentVersion\Run\DesktopImagePin
 ```
+
+After moving the executable, enable the startup checkbox in the new copy to register its current location.
 
 ## Build And Test
 
