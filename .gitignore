@@ -32,5 +32,7 @@ Desktop.ini
 
 # Local application data must never be committed
 images.json
+images.backup.json
+images.json.tmp
 url-imports.json
 ImportedImages/

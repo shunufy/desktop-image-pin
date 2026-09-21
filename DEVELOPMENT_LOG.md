@@ -32,3 +32,13 @@ This log summarizes repository-visible development milestones. It does not claim
 - Added a Hub checkbox for optional Windows startup registration.
 - Implemented startup registration through the current-user `Run` registry key so administrator rights are not required.
 - Added unit tests for startup command generation and enable/disable behavior without touching the real registry.
+
+## 2026-09-21 - Grouping And Recovery
+
+- Integrated group selection, shared movement and scaling, and persisted group membership from local development.
+- Added debounced autosave, validated backups, single-instance activation, and off-screen recovery.
+- Audited restoration, backup replacement, duplication failures, screen geometry, and group transforms.
+- Preserved unavailable image registrations and added Hub actions to retry or relink them.
+- Added regression coverage for missing and corrupt files, repeated backup recovery, invalid JSON contents, monitor gaps, grouped rescue, rotated scaling, and scale limits.
+- Kept existing English model labels, startup registry behavior, and public tests while updating the English and Japanese guides.
+- Prepared version 1.4.0 with an English Windows x64 executable and the existing CI/release workflow.

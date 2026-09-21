@@ -4,6 +4,27 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-21
+
+### Added
+
+- Group and ungroup selected images from the Hub, with shared dragging and proportional or per-axis scaling.
+- Persist group membership alongside existing layout settings.
+- Autosave after 1.5 seconds without changes, with a validated backup generation.
+- Single-instance handling that activates the existing Hub on a second launch.
+- Per-monitor off-screen recovery at startup and from the Hub, preserving group spacing.
+- Unavailable-image registrations with Retry and Change actions and a separate unavailable count.
+- Regression tests for recovery, grouping, scale limits, monitor gaps, and unavailable files.
+
+### Fixed
+
+- Preserve missing and unreadable image registrations across saves and suppress save notifications during restoration.
+- Keep valid backups when saving after recovery from a corrupt primary file.
+- Validate saved state contents, including null entries and invalid numeric values, before restoration.
+- Report duplication failures without allowing an exception to terminate the app.
+- Apply axis-specific scaling in screen coordinates for rotated images and preserve aspect ratios at scale limits.
+- Close image streams even when decoding fails so damaged files can be replaced and retried.
+
 ## [1.3.0] - 2026-06-29
 
 ### Added
@@ -49,7 +70,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - Layout persistence and restoration.
 - System tray integration and global Hub hotkey.
 
-[Unreleased]: https://github.com/shunufy/desktop-image-pin/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/shunufy/desktop-image-pin/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/shunufy/desktop-image-pin/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/shunufy/desktop-image-pin/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/shunufy/desktop-image-pin/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/shunufy/desktop-image-pin/compare/v1.0.0...v1.1.0

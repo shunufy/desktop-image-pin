@@ -119,8 +119,63 @@ public partial class HubWindow : Window
     {
         if (ImagesListBox.SelectedItem is ImageItem item)
         {
-            _imageManager.DuplicateImage(item);
+            if (!_imageManager.TryDuplicateImage(item, out var error))
+            {
+                ShowImageError(error!);
+            }
         }
+    }
+
+    private void RetryImageButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: ImageItem item })
+        {
+            return;
+        }
+
+        try
+        {
+            _imageManager.RetryImage(item);
+        }
+        catch (Exception exception)
+        {
+            ShowImageError(exception);
+        }
+    }
+
+    private void GroupSelectedButton_Click(object sender, RoutedEventArgs e)
+    {
+        _imageManager.GroupImages(ImagesListBox.SelectedItems.Cast<ImageItem>().ToArray());
+        RefreshGroupControls();
+    }
+
+    private void UngroupSelectedButton_Click(object sender, RoutedEventArgs e)
+    {
+        _imageManager.UngroupImages(ImagesListBox.SelectedItems.Cast<ImageItem>().ToArray());
+        RefreshGroupControls();
+    }
+
+    private void BringOffscreenImagesButton_Click(object sender, RoutedEventArgs e)
+    {
+        var movedCount = _imageManager.BringOffscreenImagesIntoView();
+        MessageBox.Show(this,
+            movedCount == 0
+                ? "No off-screen images were found."
+                : $"Moved {movedCount} off-screen images back into view.",
+            "Image Placement", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void ImagesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        RefreshGroupControls();
+    }
+
+    private void RefreshGroupControls()
+    {
+        var selectedItems = ImagesListBox.SelectedItems.Cast<ImageItem>().ToArray();
+        SelectedCountTextBlock.Text = $"Selected {selectedItems.Length}";
+        GroupSelectedButton.IsEnabled = selectedItems.Length >= 2;
+        UngroupSelectedButton.IsEnabled = selectedItems.Any(item => item.IsGrouped);
     }
 
     private void AddClipboardImageButton_Click(object sender, RoutedEventArgs e)

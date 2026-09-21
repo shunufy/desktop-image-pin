@@ -1,3 +1,4 @@
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
@@ -13,7 +14,9 @@ using DragDropEffects = System.Windows.DragDropEffects;
 using DragEventArgs = System.Windows.DragEventArgs;
 using IDataObject = System.Windows.IDataObject;
 using MessageBox = System.Windows.MessageBox;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using Point = System.Windows.Point;
 
 namespace DesktopImagePin.Windows;
 
@@ -28,8 +31,6 @@ public partial class ImageWindow : Window
     private const int GwlExStyle = -20;
     private const int WsExTransparent = 0x00000020;
 
-    private const double MinimumScale = 0.05;
-    private const double MaximumScale = 10.0;
     private const double ScaleStep = 1.1;
     private const double InitialWorkAreaRatio = 0.9;
 
@@ -37,6 +38,8 @@ public partial class ImageWindow : Window
     private readonly ImageManager _imageManager;
     private double _imageWidth;
     private double _imageHeight;
+    private Point _dragStartPointer;
+    private Dictionary<ImageItem, (double Left, double Top)>? _dragStartPositions;
 
     public ImageWindow(ImageItem item, ImageManager imageManager)
     {
@@ -48,11 +51,13 @@ public partial class ImageWindow : Window
         if (hasSavedPosition)
         {
             WindowStartupLocation = WindowStartupLocation.Manual;
-            Left = item.Left!.Value;
-            Top = item.Top!.Value;
         }
 
         SetImage(item.FilePath, fitToWorkArea: !hasSavedPosition);
+        if (hasSavedPosition)
+        {
+            SetPosition(item.Left!.Value, item.Top!.Value);
+        }
         SourceInitialized += (_, _) =>
         {
             SetDisplayLayer(_item.DisplayLayer);
@@ -82,11 +87,11 @@ public partial class ImageWindow : Window
         if (fitToWorkArea)
         {
             var initialScale = CalculateInitialScale();
-            ApplyScale(initialScale, initialScale);
+            SetScale(initialScale, initialScale);
             return;
         }
 
-        ApplyScale(_item.ScaleX, _item.ScaleY);
+        SetScale(_item.ScaleX, _item.ScaleY);
     }
 
     public void ApplyAppearance()
@@ -173,11 +178,11 @@ public partial class ImageWindow : Window
 
     private static BitmapImage LoadBitmap(string filePath)
     {
+        using var stream = File.OpenRead(filePath);
         var bitmap = new BitmapImage();
         bitmap.BeginInit();
         bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-        bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
+        bitmap.StreamSource = stream;
         bitmap.EndInit();
         bitmap.Freeze();
         return bitmap;
@@ -194,14 +199,28 @@ public partial class ImageWindow : Window
         return Math.Min(1.0, Math.Min(widthScale, heightScale));
     }
 
-    private void ApplyScale(double scaleX, double scaleY)
+    public void SetScale(double scaleX, double scaleY)
     {
-        var clampedScaleX = Math.Clamp(scaleX, MinimumScale, MaximumScale);
-        var clampedScaleY = Math.Clamp(scaleY, MinimumScale, MaximumScale);
+        var clampedScaleX = Math.Clamp(
+            scaleX,
+            ImageManager.MinimumScale,
+            ImageManager.MaximumScale);
+        var clampedScaleY = Math.Clamp(
+            scaleY,
+            ImageManager.MinimumScale,
+            ImageManager.MaximumScale);
         _item.ScaleX = clampedScaleX;
         _item.ScaleY = clampedScaleY;
         _item.Scale = Math.Min(clampedScaleX, clampedScaleY);
         ApplyAppearance();
+    }
+
+    public void SetPosition(double left, double top)
+    {
+        Left = left;
+        Top = top;
+        _item.Left = left;
+        _item.Top = top;
     }
 
     private void DisplayedImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -211,16 +230,72 @@ public partial class ImageWindow : Window
             return;
         }
 
-        try
+        _dragStartPointer = GetMouseScreenPosition(e);
+        _dragStartPositions = _imageManager
+            .GetTransformTargets(_item)
+            .ToDictionary(
+                item => item,
+                item => (
+                    Left: item.Window?.Left ?? item.Left ?? 0,
+                    Top: item.Window?.Top ?? item.Top ?? 0));
+        DisplayedImage.CaptureMouse();
+        e.Handled = true;
+    }
+
+    private void DisplayedImage_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_dragStartPositions is null)
         {
-            DragMove();
+            return;
         }
-        catch (InvalidOperationException)
+
+        if (e.LeftButton != MouseButtonState.Pressed)
         {
-            // The mouse button can be released before WPF begins DragMove.
+            EndDrag();
+            return;
+        }
+
+        var pointer = GetMouseScreenPosition(e);
+        var deltaX = pointer.X - _dragStartPointer.X;
+        var deltaY = pointer.Y - _dragStartPointer.Y;
+
+        foreach (var (item, position) in _dragStartPositions)
+        {
+            ImageManager.SetItemPosition(item,
+                position.Left + deltaX,
+                position.Top + deltaY);
+        }
+    }
+
+    private void DisplayedImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        EndDrag();
+        e.Handled = true;
+    }
+
+    private void DisplayedImage_LostMouseCapture(object sender, MouseEventArgs e)
+    {
+        _dragStartPositions = null;
+        RestoreBottommostPosition();
+    }
+
+    private void EndDrag()
+    {
+        _dragStartPositions = null;
+        if (DisplayedImage.IsMouseCaptured)
+        {
+            DisplayedImage.ReleaseMouseCapture();
         }
 
         RestoreBottommostPosition();
+    }
+
+    private Point GetMouseScreenPosition(MouseEventArgs e)
+    {
+        var devicePoint = PointToScreen(e.GetPosition(this));
+        var presentationSource = PresentationSource.FromVisual(this);
+        return presentationSource?.CompositionTarget?.TransformFromDevice.Transform(devicePoint)
+            ?? devicePoint;
     }
 
     private void DisplayedImage_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -234,15 +309,15 @@ public partial class ImageWindow : Window
 
         if (controlOnly)
         {
-            ApplyScale(_item.ScaleX * factor, _item.ScaleY);
+            _imageManager.ScaleImageOrGroup(_item, factor, 1.0);
         }
         else if (altOnly)
         {
-            ApplyScale(_item.ScaleX, _item.ScaleY * factor);
+            _imageManager.ScaleImageOrGroup(_item, 1.0, factor);
         }
         else
         {
-            ApplyScale(_item.ScaleX * factor, _item.ScaleY * factor);
+            _imageManager.ScaleImageOrGroup(_item, factor, factor);
         }
 
         e.Handled = true;
@@ -280,17 +355,27 @@ public partial class ImageWindow : Window
 
     private void DuplicateMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        _imageManager.DuplicateImage(_item);
+        if (!_imageManager.TryDuplicateImage(_item, out var error))
+        {
+            MessageBox.Show(this,
+                $"Could not duplicate the image.\n\n{error!.Message}",
+                "Image Duplication Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void ZoomInMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        ApplyScale(_item.ScaleX * ScaleStep, _item.ScaleY * ScaleStep);
+        _imageManager.ScaleImageOrGroup(_item, ScaleStep, ScaleStep);
     }
 
     private void ZoomOutMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        ApplyScale(_item.ScaleX / ScaleStep, _item.ScaleY / ScaleStep);
+        _imageManager.ScaleImageOrGroup(_item, 1.0 / ScaleStep, 1.0 / ScaleStep);
+    }
+
+    private void UngroupMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        _imageManager.UngroupImages([_item]);
     }
 
     private void TopmostMenuItem_Click(object sender, RoutedEventArgs e)
