@@ -58,7 +58,7 @@ The screenshot shows an earlier release. Version 1.4 also includes grouping, ret
 | GIF | `.gif` | First frame only |
 | TIFF | `.tif`, `.tiff` | Static images |
 
-URL downloads are limited to 25 MB and are validated as images before use.
+URL downloads are limited to 25 MB, have a 30-second deadline that includes the response body, and are validated as images before use. Failed downloads do not leave partial files.
 
 ## Install
 
@@ -69,6 +69,8 @@ URL downloads are limited to 25 MB and are validated as images before use.
 3. Exit any older running version, then double-click the executable.
 
 The release is a self-contained Windows x64 executable; installing the .NET runtime separately is not required.
+
+Before replacing or launching an updated executable, choose **Exit** in the Hub or the tray menu. Closing the Hub with **X** only hides it; the app keeps running. Wait for the tray icon to disappear, replace the old executable, then launch the new version. If the older version is still running, launching the new one only reopens the older Hub.
 
 ### Run from source
 

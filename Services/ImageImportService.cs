@@ -9,15 +9,24 @@ public sealed class ImageImportService
 {
     public const long MaximumDownloadBytes = 25 * 1024 * 1024;
 
-    private static readonly HttpClient HttpClient = new()
+    private static readonly HttpClient SharedHttpClient = new()
     {
-        Timeout = TimeSpan.FromSeconds(30)
+        Timeout = Timeout.InfiniteTimeSpan
     };
 
     private readonly string _importDirectory;
+    private readonly HttpClient _httpClient;
+    private readonly TimeProvider _timeProvider;
 
     public ImageImportService(string? importDirectory = null)
+        : this(importDirectory, SharedHttpClient, TimeProvider.System)
     {
+    }
+
+    internal ImageImportService(string? importDirectory, HttpClient httpClient, TimeProvider timeProvider)
+    {
+        _httpClient = httpClient;
+        _timeProvider = timeProvider;
         _importDirectory = importDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "DesktopImagePin",
@@ -90,9 +99,14 @@ public sealed class ImageImportService
             throw new ArgumentException("Enter an HTTP or HTTPS image URL.");
         }
 
-        using var response = await HttpClient.GetAsync(
+        // ResponseHeadersRead ends HttpClient's timeout at the headers, so keep one
+        // deadline alive through stream acquisition and the entire body transfer.
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30), _timeProvider);
+        var cancellationToken = deadline.Token;
+        using var response = await _httpClient.GetAsync(
             uri,
-            HttpCompletionOption.ResponseHeadersRead);
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
         response.EnsureSuccessStatusCode();
 
         if (response.Content.Headers.ContentLength > MaximumDownloadBytes)
@@ -106,8 +120,10 @@ public sealed class ImageImportService
 
         try
         {
-            await DownloadToFileAsync(response, filePath);
+            await DownloadToFileAsync(response, filePath, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             ValidateImage(filePath);
+            cancellationToken.ThrowIfCancellationRequested();
             return filePath;
         }
         catch
@@ -117,16 +133,19 @@ public sealed class ImageImportService
         }
     }
 
-    private static async Task DownloadToFileAsync(HttpResponseMessage response, string filePath)
+    private static async Task DownloadToFileAsync(
+        HttpResponseMessage response,
+        string filePath,
+        CancellationToken cancellationToken)
     {
-        await using var source = await response.Content.ReadAsStreamAsync();
+        await using var source = await response.Content.ReadAsStreamAsync(cancellationToken);
         await using var destination = File.Create(filePath);
         var buffer = new byte[81920];
         long totalBytes = 0;
 
         while (true)
         {
-            var bytesRead = await source.ReadAsync(buffer);
+            var bytesRead = await source.ReadAsync(buffer.AsMemory(), cancellationToken);
             if (bytesRead == 0)
             {
                 break;
@@ -138,7 +157,7 @@ public sealed class ImageImportService
                 throw new InvalidOperationException("The image exceeds the 25 MB download limit.");
             }
 
-            await destination.WriteAsync(buffer.AsMemory(0, bytesRead));
+            await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
         }
     }
 

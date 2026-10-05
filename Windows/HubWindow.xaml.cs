@@ -21,17 +21,29 @@ namespace DesktopImagePin.Windows;
 public partial class HubWindow : Window
 {
     private readonly ImageManager _imageManager;
-    private readonly ImageImportService _imageImportService = new();
-    private readonly StartupService _startupService = new();
+    private readonly ImageImportService _imageImportService;
+    private readonly StartupService _startupService;
     private readonly UrlImportLibrary _urlImportLibrary;
+    private readonly HashSet<ImageItem> _selectedGroupedItems = [];
     private GlobalHotkeyService? _hotkeyService;
 
     public HubWindow(ImageManager imageManager)
+        : this(imageManager, new ImageImportService(), new StartupService(), null)
+    {
+    }
+
+    internal HubWindow(
+        ImageManager imageManager,
+        ImageImportService imageImportService,
+        StartupService startupService,
+        string? urlImportStatePath)
     {
         InitializeComponent();
 
         _imageManager = imageManager;
-        _urlImportLibrary = new UrlImportLibrary(_imageImportService);
+        _imageImportService = imageImportService;
+        _startupService = startupService;
+        _urlImportLibrary = new UrlImportLibrary(_imageImportService, urlImportStatePath);
         DataContext = imageManager;
         UrlImportsListBox.ItemsSource = _urlImportLibrary.Items;
         RefreshStartupCheckBox();
@@ -167,15 +179,48 @@ public partial class HubWindow : Window
 
     private void ImagesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        foreach (ImageItem item in e.RemovedItems)
+        {
+            PropertyChangedEventManager.RemoveHandler(item, SelectedImage_GroupChanged, nameof(ImageItem.GroupId));
+            _selectedGroupedItems.Remove(item);
+        }
+
+        foreach (ImageItem item in e.AddedItems)
+        {
+            PropertyChangedEventManager.AddHandler(item, SelectedImage_GroupChanged, nameof(ImageItem.GroupId));
+            UpdateSelectedGroupMembership(item);
+        }
+
         RefreshGroupControls();
+    }
+
+    private void SelectedImage_GroupChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is ImageItem item)
+        {
+            UpdateSelectedGroupMembership(item);
+            UngroupSelectedButton.IsEnabled = _selectedGroupedItems.Count > 0;
+        }
+    }
+
+    private void UpdateSelectedGroupMembership(ImageItem item)
+    {
+        if (item.IsGrouped)
+        {
+            _selectedGroupedItems.Add(item);
+        }
+        else
+        {
+            _selectedGroupedItems.Remove(item);
+        }
     }
 
     private void RefreshGroupControls()
     {
-        var selectedItems = ImagesListBox.SelectedItems.Cast<ImageItem>().ToArray();
-        SelectedCountTextBlock.Text = $"Selected {selectedItems.Length}";
-        GroupSelectedButton.IsEnabled = selectedItems.Length >= 2;
-        UngroupSelectedButton.IsEnabled = selectedItems.Any(item => item.IsGrouped);
+        var selectedCount = ImagesListBox.SelectedItems.Count;
+        SelectedCountTextBlock.Text = $"Selected {selectedCount}";
+        GroupSelectedButton.IsEnabled = selectedCount >= 2;
+        UngroupSelectedButton.IsEnabled = _selectedGroupedItems.Count > 0;
     }
 
     private void AddClipboardImageButton_Click(object sender, RoutedEventArgs e)
@@ -420,7 +465,7 @@ public partial class HubWindow : Window
 
     private void HubWindow_Closing(object? sender, CancelEventArgs e)
     {
-        if (App.Current.IsExiting)
+        if (App.Current is null || App.Current.IsExiting)
         {
             return;
         }

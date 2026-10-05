@@ -2,7 +2,13 @@
 
 All notable changes are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [1.4.1] - 2026-10-05
+
+### Fixed
+
+- Apply the 30-second URL import deadline through the entire streamed download, including stalled response bodies, and remove partial files on timeout.
+- Keep all image-row buttons visible at the Hub's minimum window width.
+- Update the Hub's Ungroup action when selected images are ungrouped from an image window or a group loses its other member.
 
 ## [1.4.0] - 2026-09-21
 

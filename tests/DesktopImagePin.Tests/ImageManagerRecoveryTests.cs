@@ -20,21 +20,20 @@ public sealed class ImageManagerRecoveryTests : IDisposable
     private static ImageManager CreateManager() => new(() => [WorkArea], _ => { });
 
     [Fact]
-    public void RealImageWindows_ShowAndCloseWithCorrectRegistrationCounts()
+    public void RealImageWindows_CreateHiddenHandlesAndCloseWithCorrectRegistrationCounts()
     {
         WpfTestHelper.Run(() =>
         {
             var manager = new ImageManager(DesktopWorkAreaProvider.GetWorkAreas, window =>
             {
-                window.ShowActivated = false;
-                window.Show();
+                _ = new System.Windows.Interop.WindowInteropHelper(window).EnsureHandle();
             });
             try
             {
                 var first = manager.AddImage(_imagePath, new() { Left = 100, Top = 100 });
                 var second = manager.AddImage(_imagePath, new() { Left = 250, Top = 100 });
-                Assert.True(first.Window!.IsVisible);
-                Assert.True(second.Window!.IsVisible);
+                Assert.False(first.Window!.IsVisible);
+                Assert.False(second.Window!.IsVisible);
                 Assert.Equal(2, manager.ImageCount);
                 Assert.NotEqual(IntPtr.Zero, new System.Windows.Interop.WindowInteropHelper(first.Window).Handle);
                 manager.GroupImages([first, second]);

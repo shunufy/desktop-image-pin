@@ -28,8 +28,14 @@ Automated tests currently cover:
 - duplication after the source file is removed
 - restoration notification suppression and later change notifications
 - startup registry behavior and single-instance activation signaling
+- complete URL-download deadlines, stream failures, size limits, and partial-file cleanup
+- Hub actions at minimum width, group controls after image-window changes, and selection of 1,000 rows
+- recycling virtualized Hub rows without modifying opacity or triggering saves
+- recovery geometry at 100%, 125%, 150%, 175%, and 200% system scaling, 1,024-member oversized groups, and scaling a 2,048-member rotated group
 
-WPF tests use temporary generated images. They include native image-window creation, scaling, and closure; pixel-position comparisons allow DPI-dependent rounding. Tests do not use the user's saved layout or modify the real startup registry. Temporary state paths and injected work-area/display providers isolate recovery tests.
+WPF tests use temporary generated images. They create native image-window handles without showing or activating the windows, then check scaling and closure; pixel-position comparisons allow DPI-dependent rounding. Hub tests measure and exercise the actual controls without creating a native Hub handle, registering its hotkey, or starting the application. Temporary state paths, an in-memory startup store, and injected work-area/display providers isolate the tests from the user's saved layout, URL library, clipboard, and startup registry.
+
+The scaled geometry tests simulate different system DPI values; they do not replace physical mixed-DPI monitor dragging. Large-group tests cover model transforms, recovery geometry, and virtualized Hub controls, not the memory/rendering cost of thousands of simultaneously visible native windows.
 
 ## Manual Windows Checklist
 

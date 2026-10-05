@@ -126,4 +126,30 @@ public sealed class GroupTransformCalculatorTests
         Assert.Equal(1, result.ScaleX);
         Assert.Equal(10, result.ScaleY);
     }
+
+    [Fact]
+    public void LargeRotatedGroup_UsesTheLimitingMemberAndPreservesEveryRelativePosition()
+    {
+        var inputs = Enumerable.Range(0, 2048)
+            .Select(index => new GroupTransformInput(Guid.NewGuid(), index % 64 * 100, index / 64 * 80,
+                1, index == 2047 ? 8 : 1, index % 4 * 90))
+            .ToArray();
+        var anchor = inputs[1000];
+
+        var results = GroupTransformCalculator.Scale(inputs, anchor.Id, 2, 1,
+            ImageManager.MinimumScale, ImageManager.MaximumScale);
+
+        Assert.Equal(inputs.Length, results.Count);
+        for (var index = 0; index < inputs.Length; index++)
+        {
+            var input = inputs[index];
+            var result = results[index];
+            Assert.Equal(input.Id, result.Id);
+            Assert.Equal(anchor.Left + (input.Left - anchor.Left) * 1.25, result.Left, precision: 8);
+            Assert.Equal(input.Top, result.Top);
+            var rotated = input.RotationDegrees is 90 or 270;
+            Assert.Equal(input.ScaleX * (rotated ? 1 : 1.25), result.ScaleX, precision: 8);
+            Assert.Equal(input.ScaleY * (rotated ? 1.25 : 1), result.ScaleY, precision: 8);
+        }
+    }
 }

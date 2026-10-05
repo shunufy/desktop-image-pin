@@ -96,4 +96,48 @@ public sealed class WindowPlacementServiceTests
         Assert.Equal(new Rect(-1280, 0, 1280, 720), areas[0]);
         Assert.Equal(new Rect(0, 0, 1920, 1040), areas[1]);
     }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(1.25)]
+    [InlineData(1.5)]
+    [InlineData(1.75)]
+    [InlineData(2)]
+    public void ScaledDesktop_RecoversAcrossGapsAndNegativeMonitorsWithoutMovingVisibleImages(double scale)
+    {
+        Rect[] pixelAreas = [new(-1920, -1080, 1920, 1040), new(0, 0, 3840, 2080)];
+        var areas = DesktopWorkAreaProvider.ToLogicalWorkAreas(pixelAreas, scale, scale);
+        var visible = new ImageWindowBounds(-1800 / scale, -900 / scale, 100 / scale, 100 / scale);
+        Assert.Equal(new Point(visible.Left, visible.Top), WindowPlacementService.EnsureVisible(visible, areas));
+
+        ImageWindowBounds[] group =
+        [
+            new(-800 / scale, 600 / scale, 120 / scale, 100 / scale),
+            new(-640 / scale, 600 / scale, 120 / scale, 100 / scale)
+        ];
+        Assert.All(group, window => Assert.False(WindowPlacementService.IsVisible(window, areas)));
+        var offset = WindowPlacementService.GetGroupOffset(group, areas);
+        Assert.All(group, window => Assert.True(WindowPlacementService.IsVisible(
+            window with { Left = window.Left + offset.X, Top = window.Top + offset.Y }, areas)));
+        // The monitor above the gap is closer than the primary monitor to its right.
+        Assert.Equal(0, offset.X);
+        Assert.Equal(-740 / scale, offset.Y, precision: 8);
+    }
+
+    [Fact]
+    public void LargeOversizedGroup_RecoversMembersAndHasAStableRepeatedResult()
+    {
+        var windows = Enumerable.Range(0, 1024)
+            .Select(index => new ImageWindowBounds(6000 + index % 32 * 64, 4000 + index / 32 * 64, 48, 48))
+            .ToArray();
+        var offset = WindowPlacementService.GetGroupOffset(windows, [WorkArea]);
+        var moved = windows.Select(window => window with
+        {
+            Left = window.Left + offset.X,
+            Top = window.Top + offset.Y
+        }).ToArray();
+
+        Assert.True(moved.Count(window => WindowPlacementService.IsVisible(window, WorkArea)) >= 480);
+        Assert.Equal(new Vector(), WindowPlacementService.GetGroupOffset(moved, [WorkArea]));
+    }
 }
